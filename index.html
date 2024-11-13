@@ -50,9 +50,18 @@
             }
 
             let results = '';
+            let counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+
             for (let i = 1; i <= throwsCount; i++) {
-                const rollResult = Math.floor(Math.random() * 6) + 1; // Генерируем случайное число от 1 до 6
+                const rollResult = Math.floor(Math.random() * 6) + 1;
                 results += `${i}. Выпало: ${rollResult}\n`;
+                
+                counts[rollResult]++;
+            }
+
+            results += "\n\nРезультаты:\n";
+            for (let num = 1; num <= 6; num++) {
+                results += `${num}: ${counts[num]}\n`;
             }
 
             resultsDiv.innerText = results;
