@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пятнашки</title>
+    <title>Переключатель Пятнашек</title>
     <style>
         .game-field {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 5px;
-            width: 300px;
-            height: 300px;
+            width: 375px;
+            height: 375px;
             margin: 40px auto;
             border: 1px solid black;
             touch-action: none;
@@ -42,6 +42,10 @@
             margin-top: 20px;
             text-align: center;
         }
+        
+        #mode-switcher {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -52,15 +56,26 @@
         <input type="color" id="tileColor" value="#ffeb3b">
     </div>
 
+    <select id="modeSwitcher">
+        <option value="normal">Обычные пятнашки (4x4)</option>
+        <option value="large">Большие пятнашки (5x5)</option>
+    </select>
+
     <script>
         const gameField = document.getElementById('gameField');
-        const tiles = [];
+        const modeSwitcher = document.getElementById('modeSwitcher');
+        let tiles = [];
         let emptyTileIndex = 15;
         let swipeStartX, swipeStartY;
         let currentColor = '#ffeb3b';
+        let isLargeMode = false;
 
         function createGame() {
-            for (let i = 1; i <= 15; i++) {
+            gameField.innerHTML = '';
+            tiles = [];
+            emptyTileIndex = isLargeMode ? 23 : 15;
+
+            for (let i = 1; i <= (isLargeMode ? 24 : 15); i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.textContent = i;
@@ -85,8 +100,8 @@
         }
 
         function isValidMove(fromIndex, toIndex) {
-            const rowDiff = Math.abs(Math.floor(fromIndex / 4) - Math.floor(toIndex / 4));
-            const colDiff = Math.abs((fromIndex % 4) - (toIndex % 4));
+            const rowDiff = Math.abs(Math.floor(fromIndex / (isLargeMode ? 5 : 4)) - Math.floor(toIndex / (isLargeMode ? 5 : 4)));
+            const colDiff = Math.abs((fromIndex % (isLargeMode ? 5 : 4)) - (toIndex % (isLargeMode ? 5 : 4)));
             return rowDiff + colDiff === 1;
         }
 
@@ -97,7 +112,6 @@
                 emptyTileIndex = tileIndex;
                 renderTiles();
                 
-                // Проверяем, собраны ли все плитки правильно
                 if (checkWin()) {
                     showCongratulationsMessage();
                 }
@@ -114,16 +128,16 @@
         }
 
         function showCongratulationsMessage() {
-            alert("Поздравляем! Вы собрали все плитки правильно!");
-            shuffleTiles(); // Перемешиваем плитки для новой игры
+            alert("Поздравляю! Вы собрали все плитки правильно!");
+            shuffleTiles();
             renderTiles();
         }
 
         function renderTiles() {
             tiles.forEach((tile, index) => {
-                const row = Math.floor(index / 4);
-                const col = index % 4;
-                tile.style.transform = `translate(${col * 75}px, ${row * 75}px)`;
+                const row = Math.floor(index / (isLargeMode ? 5 : 4));
+                const col = index % (isLargeMode ? 5 : 4);
+                tile.style.transform = `translate(${col * (isLargeMode ? 75 : 70)}px, ${row * (isLargeMode ? 75 : 70)}px)`;
             });
         }
 
@@ -152,8 +166,8 @@
                 return; // Игнорируем диагональные свайпы
             }
 
-            const emptyTileRow = Math.floor(emptyTileIndex / 4);
-            const emptyTileCol = emptyTileIndex % 4;
+            const emptyTileRow = Math.floor(emptyTileIndex / (isLargeMode ? 5 : 4));
+            const emptyTileCol = emptyTileIndex % (isLargeMode ? 5 : 4);
 
             let tileToMove;
             switch (direction) {
@@ -164,10 +178,10 @@
                     tileToMove = tiles[emptyTileIndex - 1];
                     break;
                 case 'up':
-                    tileToMove = tiles[emptyTileIndex + 4];
+                    tileToMove = tiles[emptyTileIndex + (isLargeMode ? 5 : 4)];
                     break;
                 case 'down':
-                    tileToMove = tiles[emptyTileIndex - 4];
+                    tileToMove = tiles[emptyTileIndex - (isLargeMode ? 5 : 4)];
                     break;
             }
 
@@ -188,6 +202,13 @@
                 }
             });
         }
+
+        modeSwitcher.addEventListener('change', function() {
+            isLargeMode = this.value === 'large';
+            createGame();
+            shuffleTiles();
+            renderTiles();
+        });
 
         createGame();
         shuffleTiles();
