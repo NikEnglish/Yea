@@ -243,7 +243,7 @@
                 <h3>Основные настройки</h3>
                 <div class="control-row">
                     <span class="control-label">Размер поля:</span>
-                    <input type="range" id="sizeSlider" min="2" max="10" value="4" step="1">
+                    <input type="range" id="sizeSlider" min="2" max="20" value="4" step="1">
                     <span class="range-value" id="sizeValue">4</span>
                 </div>
                 <button id="applySize">Применить размер</button>
@@ -809,7 +809,7 @@
         // Изменение размера поля
         applySizeBtn.addEventListener('click', () => {
             const size = parseInt(sizeSlider.value);
-            if (size >= 2 && size <= 10) {
+            if (size >= 2 && size <= 20) {
                 currentSize = size;
                 createGame(size);
                 shuffleTiles();
