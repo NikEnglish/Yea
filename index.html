@@ -13,9 +13,11 @@
             align-items: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding-top: 30px;
+            padding-top: 20px;
             overflow: auto;
             flex-direction: column;
+            color: #333;
+            transition: background-color 0.3s ease;
         }
 
         .game-field {
@@ -26,8 +28,9 @@
             touch-action: none;
             border-radius: 10px;
             background-color: #fff;
-            transition: width 0.5s ease, height 0.5s ease;
+            transition: all 0.3s ease;
             opacity: 1;
+            position: relative;
         }
 
         .tile {
@@ -38,13 +41,15 @@
             font-size: 36px;
             font-weight: bold;
             border-radius: 8px;
-            transition: transform 0.3s ease, opacity 0.5s ease;
+            transition: all 0.3s ease;
             position: absolute;
             width: 70px;
             height: 70px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             opacity: 0;
             cursor: pointer;
+            color: #333;
+            border: 1px solid transparent;
         }
 
         .tile.show {
@@ -57,11 +62,19 @@
         }
 
         .tile.highlight {
-            background-color: #ff5252 !important;
-            color: white;
             z-index: 10;
             transform: scale(1.1);
             transition: transform 0.2s ease;
+        }
+
+        .tile.correct-position {
+            animation: correctGlow 1s ease;
+        }
+
+        @keyframes correctGlow {
+            0% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.9); }
+            100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.7); }
         }
 
         .empty-tile {
@@ -76,14 +89,16 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
+            padding: 0 20px;
+            box-sizing: border-box;
         }
 
         .game-controls {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
             margin-top: 20px;
             width: 100%;
         }
@@ -92,25 +107,730 @@
             display: flex;
             flex-direction: column;
             min-width: 200px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .color-picker-container {
-            margin-top: 15px;
+        .control-group h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #4caf50;
             text-align: center;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            min-width: 120px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        input[type="color"] {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .range-value {
+            min-width: 30px;
+            text-align: right;
             font-size: 14px;
         }
 
-        label {
-            margin-right: 10px;
-            font-weight: bold;
-            color: #333;
+        select, button {
+            padding: 8px 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
         }
 
-        input[type="color"], input[type="number"] {
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-            border-radius: 5px;
+        button {
+            margin-top: 5px;
+        }
+
+        button:hover, select:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #autoHighlightBtn {
+            background-color: #2196F3;
+        }
+
+        #autoHighlightBtn.active {
+            background-color: #f44336;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #4caf50;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .game-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tile {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .game-field {
+                gap: 4px;
+                margin: 15px auto;
+            }
+
+            .control-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .control-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls-container">
+        <h1>Пятнашкинс🎀</h1>
+        <div class="game-info">Кастомизируйте игру по своему вкусу!</div>
+        <div class="game-field" id="gameField"></div>
+        
+        <div class="game-controls">
+            <div class="control-group">
+                <h3>Основные настройки</h3>
+                <div class="control-row">
+                    <span class="control-label">Размер поля:</span>
+                    <input type="range" id="sizeSlider" min="2" max="10" value="4" step="1">
+                    <span class="range-value" id="sizeValue">4</span>
+                </div>
+                <button id="applySize">Применить размер</button>
+                <button id="shuffleBtn">Перемешать</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Внешний вид плиток</h3>
+                <div class="control-row">
+                    <span class="control-label">Цвет плиток:</span>
+                    <input type="color" id="tileColor" value="#ffeb3b">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Размер плиток:</span>
+                    <input type="range" id="tileSizeSlider" min="40" max="120" value="70" step="5">
+                    <span class="range-value" id="tileSizeValue">70px</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Закругление:</span>
+                    <input type="range" id="tileRadiusSlider" min="0" max="50" value="8" step="1">
+                    <span class="range-value" id="tileRadiusValue">8px</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Размер шрифта:</span>
+                    <input type="range" id="fontSizeSlider" min="12" max="48" value="36" step="1">
+                    <span class="range-value" id="fontSizeValue">36px</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Цвета и подсветка</h3>
+                <div class="control-row">
+                    <span class="control-label">Цвет фона:</span>
+                    <input type="color" id="bgColor" value="#f7f7f7">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Цвет рамки:</span>
+                    <input type="color" id="borderColor" value="#4caf50">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Цвет текста:</span>
+                    <input type="color" id="textColor" value="#333333">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Цвет подсветки:</span>
+                    <input type="color" id="highlightColor" value="#2196F3">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Цвет правильных:</span>
+                    <input type="color" id="correctColor" value="#4caf50">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Поиск и подсветка</h3>
+                <div class="control-row">
+                    <span class="control-label">Найти число:</span>
+                    <input type="number" id="numberInput" min="1" placeholder="Введите число" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                </div>
+                <button id="findNumberBtn">Найти</button>
+                <button id="autoHighlightBtn">Автоподсветка</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gameField = document.getElementById('gameField');
+        const tileColorPicker = document.getElementById('tileColor');
+        const numberInput = document.getElementById('numberInput');
+        const findNumberBtn = document.getElementById('findNumberBtn');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        const applySizeBtn = document.getElementById('applySize');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const autoHighlightBtn = document.getElementById('autoHighlightBtn');
+        const bgColorPicker = document.getElementById('bgColor');
+        const borderColorPicker = document.getElementById('borderColor');
+        const textColorPicker = document.getElementById('textColor');
+        const highlightColorPicker = document.getElementById('highlightColor');
+        const correctColorPicker = document.getElementById('correctColor');
+        const tileSizeSlider = document.getElementById('tileSizeSlider');
+        const tileSizeValue = document.getElementById('tileSizeValue');
+        const tileRadiusSlider = document.getElementById('tileRadiusSlider');
+        const tileRadiusValue = document.getElementById('tileRadiusValue');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        
+        let tiles = [];
+        let emptyTileIndex = 15;
+        let currentSize = 4;
+        let highlightedTile = null;
+        let autoHighlightInterval = null;
+        let isAutoHighlighting = false;
+        let currentTargetNumber = 1;
+        let tileSize = 70;
+        let tileGap = 5;
+        let tileRadius = 8;
+        let fontSize = 36;
+
+        // Инициализация значений ползунков
+        function initSliders() {
+            sizeValue.textContent = sizeSlider.value;
+            tileSizeValue.textContent = tileSizeSlider.value + 'px';
+            tileRadiusValue.textContent = tileRadiusSlider.value + 'px';
+            fontSizeValue.textContent = fontSizeSlider.value + 'px';
+            
+            sizeSlider.addEventListener('input', () => {
+                sizeValue.textContent = sizeSlider.value;
+            });
+            
+            tileSizeSlider.addEventListener('input', () => {
+                tileSize = parseInt(tileSizeSlider.value);
+                tileSizeValue.textContent = tileSize + 'px';
+                updateTileStyles();
+                renderTiles(currentSize);
+            });
+            
+            tileRadiusSlider.addEventListener('input', () => {
+                tileRadius = parseInt(tileRadiusSlider.value);
+                tileRadiusValue.textContent = tileRadius + 'px';
+                updateTileStyles();
+            });
+            
+            fontSizeSlider.addEventListener('input', () => {
+                fontSize = parseInt(fontSizeSlider.value);
+                fontSizeValue.textContent = fontSize + 'px';
+                updateTileStyles();
+            });
+        }
+
+        // Обновление стилей плиток
+        function updateTileStyles() {
+            tiles.forEach(tile => {
+                if (!tile.classList.contains('empty-tile')) {
+                    tile.style.width = tileSize + 'px';
+                    tile.style.height = tileSize + 'px';
+                    tile.style.borderRadius = tileRadius + 'px';
+                    tile.style.fontSize = fontSize + 'px';
+                }
+            });
+            
+            gameField.style.width = `${currentSize * (tileSize + tileGap)}px`;
+            gameField.style.height = `${currentSize * (tileSize + tileGap)}px`;
+            gameField.style.gap = tileGap + 'px';
+        }
+
+        function createGame(size) {
+            gameField.innerHTML = '';
+            tiles = [];
+            emptyTileIndex = size * size - 1;
+            currentSize = size;
+
+            gameField.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            gameField.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+            gameField.style.width = `${size * (tileSize + tileGap)}px`;
+            gameField.style.height = `${size * (tileSize + tileGap)}px`;
+            gameField.style.gap = tileGap + 'px';
+
+            for (let i = 1; i <= size * size - 1; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.textContent = i;
+                tile.id = `tile-${i}`;
+                tile.style.width = tileSize + 'px';
+                tile.style.height = tileSize + 'px';
+                tile.style.borderRadius = tileRadius + 'px';
+                tile.style.fontSize = fontSize + 'px';
+                tile.style.color = textColorPicker.value;
+                tiles.push(tile);
+                gameField.appendChild(tile);
+            }
+
+            const emptyTile = document.createElement('div');
+            emptyTile.className = 'empty-tile';
+            emptyTile.id = 'empty-tile';
+            tiles.push(emptyTile);
+            gameField.appendChild(emptyTile);
+
+            renderTiles(size);
+        }
+
+        function highlightNumber(number) {
+            if (highlightedTile) {
+                highlightedTile.classList.remove('highlight');
+                highlightedTile.style.backgroundColor = tileColorPicker.value;
+                highlightedTile.style.color = textColorPicker.value;
+            }
+            
+            if (!number || number < 1 || number > currentSize * currentSize - 1) return;
+            
+            highlightedTile = tiles.find(tile => tile.textContent === number.toString());
+            
+            if (highlightedTile) {
+                highlightedTile.classList.add('highlight');
+                highlightedTile.style.backgroundColor = highlightColorPicker.value;
+                highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
+            }
+        }
+
+        function getContrastColor(hexColor) {
+            // Преобразуем HEX в RGB
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+            
+            // Вычисляем яркость по формуле
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            
+            // Возвращаем черный или белый в зависимости от яркости фона
+            return brightness > 128 ? '#000000' : '#FFFFFF';
+        }
+
+        function checkTilePositions() {
+            for (let num = 1; num <= currentTargetNumber; num++) {
+                const tile = tiles[num - 1];
+                if (tile.textContent !== num.toString()) {
+                    currentTargetNumber = num;
+                    return currentTargetNumber;
+                }
+            }
+            
+            for (let num = currentTargetNumber + 1; num <= currentSize * currentSize - 1; num++) {
+                const tile = tiles[num - 1];
+                if (tile.textContent !== num.toString()) {
+                    currentTargetNumber = num;
+                    return currentTargetNumber;
+                }
+            }
+            
+            stopAutoHighlight();
+            alert("Поздравляем! Все числа на своих местах!");
+            return null;
+        }
+
+        function autoHighlightNext() {
+            if (isAutoHighlighting) return;
+            
+            isAutoHighlighting = true;
+            autoHighlightBtn.classList.add('active');
+            autoHighlightBtn.textContent = "Остановить";
+            currentTargetNumber = 1;
+            
+            const firstNumber = checkTilePositions();
+            if (firstNumber) {
+                highlightNumber(firstNumber);
+            }
+            
+            autoHighlightInterval = setInterval(() => {
+                const nextNumber = checkTilePositions();
+                if (nextNumber) {
+                    highlightNumber(nextNumber);
+                }
+            }, 1000);
+        }
+
+        function stopAutoHighlight() {
+            isAutoHighlighting = false;
+            clearInterval(autoHighlightInterval);
+            autoHighlightBtn.classList.remove('active');
+            autoHighlightBtn.textContent = "Автоподсветка";
+            
+            if (highlightedTile) {
+                highlightedTile.classList.remove('highlight');
+                highlightedTile.style.backgroundColor = tileColorPicker.value;
+                highlightedTile.style.color = textColorPicker.value;
+                highlightedTile = null;
+            }
+        }
+
+        function toggleAutoHighlight() {
+            if (isAutoHighlighting) {
+                stopAutoHighlight();
+            } else {
+                autoHighlightNext();
+            }
+        }
+
+        function shuffleTiles() {
+            stopAutoHighlight();
+            
+            tiles.forEach(tile => tile.classList.remove('show'));
+
+            setTimeout(() => {
+                for (let i = tiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+                }
+                emptyTileIndex = tiles.findIndex(tile => tile.id === 'empty-tile');
+                renderTiles(currentSize);
+
+                tiles.forEach(tile => tile.classList.add('show'));
+            }, 500);
+        }
+
+        function isValidMove(fromIndex, toIndex, size) {
+            const rowDiff = Math.abs(Math.floor(fromIndex / size) - Math.floor(toIndex / size));
+            const colDiff = Math.abs((fromIndex % size) - (toIndex % size));
+            return rowDiff + colDiff === 1;
+        }
+
+        function moveTile(tileIndex, size) {
+            if (isValidMove(tileIndex, emptyTileIndex, size)) {
+                [tiles[emptyTileIndex], tiles[tileIndex]] = [tiles[tileIndex], tiles[emptyTileIndex]];
+                emptyTileIndex = tileIndex;
+                renderTiles(size);
+                
+                // Проверяем, стала ли плитка на правильное место
+                const movedTile = tiles[tileIndex];
+                if (movedTile.textContent && parseInt(movedTile.textContent) === tileIndex + 1) {
+                    movedTile.classList.add('correct-position');
+                    setTimeout(() => {
+                        movedTile.classList.remove('correct-position');
+                    }, 1000);
+                }
+                
+                highlightCorrectTiles(size);
+                saveGameState();
+
+                if (isAutoHighlighting) {
+                    const nextNumber = checkTilePositions();
+                    if (nextNumber) {
+                        highlightNumber(nextNumber);
+                    }
+                }
+
+                if (checkWin(size)) {
+                    showCongratulationsMessage();
+                }
+            }
+        }
+
+        function checkWin(size) {
+            for (let i = 0; i < size * size - 1; i++) {
+                if (parseInt(tiles[i].textContent) !== i + 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function showCongratulationsMessage() {
+            stopAutoHighlight();
+            alert("Поздравляю! Вы собрали все плитки правильно!");
+            shuffleTiles();
+        }
+
+        function renderTiles(size) {
+            tiles.forEach((tile, index) => {
+                const row = Math.floor(index / size);
+                const col = index % size;
+                tile.style.transform = `translate(${col * (tileSize + tileGap)}px, ${row * (tileSize + tileGap)}px)`;
+            });
+        }
+
+        function saveGameState() {
+            const tileNumbers = tiles.map(tile => tile.textContent || '');
+            const gameState = {
+                size: currentSize,
+                tiles: tileNumbers,
+                emptyTileIndex: emptyTileIndex,
+                color: tileColorPicker.value,
+                tileSize: tileSize,
+                tileRadius: tileRadius,
+                fontSize: fontSize,
+                bgColor: bgColorPicker.value,
+                borderColor: borderColorPicker.value,
+                textColor: textColorPicker.value,
+                highlightColor: highlightColorPicker.value,
+                correctColor: correctColorPicker.value
+            };
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function loadGameState() {
+            const savedState = localStorage.getItem('gameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                currentSize = gameState.size;
+                createGame(currentSize);
+                tiles.forEach((tile, index) => {
+                    tile.textContent = gameState.tiles[index];
+                });
+                emptyTileIndex = gameState.emptyTileIndex;
+                
+                // Восстанавливаем настройки
+                tileColorPicker.value = gameState.color || '#ffeb3b';
+                bgColorPicker.value = gameState.bgColor || '#f7f7f7';
+                borderColorPicker.value = gameState.borderColor || '#4caf50';
+                textColorPicker.value = gameState.textColor || '#333333';
+                highlightColorPicker.value = gameState.highlightColor || '#2196F3';
+                correctColorPicker.value = gameState.correctColor || '#4caf50';
+                
+                tileSize = gameState.tileSize || 70;
+                tileRadius = gameState.tileRadius || 8;
+                fontSize = gameState.fontSize || 36;
+                
+                // Обновляем ползунки
+                sizeSlider.value = currentSize;
+                sizeValue.textContent = currentSize;
+                tileSizeSlider.value = tileSize;
+                tileSizeValue.textContent = tileSize + 'px';
+                tileRadiusSlider.value = tileRadius;
+                tileRadiusValue.textContent = tileRadius + 'px';
+                fontSizeSlider.value = fontSize;
+                fontSizeValue.textContent = fontSize + 'px';
+                
+                // Применяем стили
+                updateTileStyles();
+                updateColors();
+                renderTiles(currentSize);
+                highlightCorrectTiles(currentSize);
+            }
+        }
+
+        function highlightCorrectTiles(size) {
+            tiles.forEach((tile, index) => {
+                if (tile.textContent && parseInt(tile.textContent) === index + 1) {
+                    tile.classList.add('correct');
+                    tile.style.borderColor = correctColorPicker.value;
+                } else {
+                    tile.classList.remove('correct');
+                    tile.style.borderColor = 'transparent';
+                }
+            });
+        }
+
+        function updateColors() {
+            // Фон страницы
+            document.body.style.backgroundColor = bgColorPicker.value;
+            
+            // Цвет текста на странице
+            document.body.style.color = getContrastColor(bgColorPicker.value);
+            
+            // Рамка игрового поля
+            gameField.style.borderColor = borderColorPicker.value;
+            
+            // Цвет плиток
+            tiles.forEach(tile => {
+                if (!tile.classList.contains('empty-tile')) {
+                    tile.style.backgroundColor = tileColorPicker.value;
+                    tile.style.color = textColorPicker.value;
+                }
+            });
+            
+            // Цвет правильных плиток
+            highlightCorrectTiles(currentSize);
+        }
+
+        // Обработчики событий
+        gameField.addEventListener('click', (e) => {
+            const tile = e.target.closest('.tile');
+            if (tile) {
+                const tileIndex = tiles.indexOf(tile);
+                if (tileIndex !== -1) {
+                    moveTile(tileIndex, currentSize);
+                }
+            }
+        });
+
+        // Обработчики свайпов для мобильных устройств
+        let swipeStartX, swipeStartY;
+        
+        gameField.addEventListener('touchstart', (e) => {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+        });
+
+        gameField.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+
+        gameField.addEventListener('touchend', (e) => {
+            const swipeEndX = e.changedTouches[0].clientX;
+            const swipeEndY = e.changedTouches[0].clientY;
+
+            const deltaX = Math.abs(swipeEndX - swipeStartX);
+            const deltaY = Math.abs(swipeEndY - swipeStartY);
+
+            let direction;
+            if (deltaX > deltaY) {
+                direction = swipeEndX < swipeStartX ? 'left' : 'right';
+            } else if (deltaY > deltaX) {
+                direction = swipeEndY < swipeStartY ? 'up' : 'down';
+            } else {
+                return;
+            }
+
+            const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
+            const emptyTileCol = emptyTileIndex % currentSize;
+
+            let tileToMove;
+            switch (direction) {
+                case 'left':
+                    tileToMove = tiles[emptyTileIndex + 1];
+                    break;
+                case 'right':
+                    tileToMove = tiles[emptyTileIndex - 1];
+                    break;
+                case 'up':
+                    tileToMove = tiles[emptyTileIndex + currentSize];
+                    break;
+                case 'down':
+                    tileToMove = tiles[emptyTileIndex - currentSize];
+                    break;
+            }
+
+            if (tileToMove && isValidMove(tiles.indexOf(tileToMove), emptyTileIndex, currentSize)) {
+                moveTile(tiles.indexOf(tileToMove), currentSize);
+            }
+        });
+
+        // Обработчики изменения цветов
+        tileColorPicker.addEventListener('change', (e) => {
+            updateColors();
+            saveGameState();
+        });
+
+        bgColorPicker.addEventListener('change', (e) => {
+            updateColors();
+            saveGameState();
+        });
+
+        borderColorPicker.addEventListener('change', (e) => {
+            updateColors();
+            saveGameState();
+        });
+
+        textColorPicker.addEventListener('change', (e) => {
+            updateColors();
+            saveGameState();
+        });
+
+        highlightColorPicker.addEventListener('change', (e) => {
+            if (highlightedTile) {
+                highlightedTile.style.backgroundColor = highlightColorPicker.value;
+                highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
+            }
+            saveGameState();
+        });
+
+        correctColorPicker.addEventListener('change', (e) => {
+            highlightCorrectTiles(currentSize);
+            saveGameState();
+        });
+
+        // Поиск числа
+        findNumberBtn.addEventListener('click', () => {
+            const number = parseInt(numberInput.value);
+            if (!isNaN(number)) {
+                highlightNumber(number);
+            }
+        });
+
+        numberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const number = parseInt(numberInput.value);
+                if (!isNaN(number)) {
+                    highlightNumber(number);
+                }
+            }
+        });
+
+        // Изменение размера поля
+        applySizeBtn.addEventListener('click', () => {
+            const size = parseInt(sizeSlider.value);
+            if (size >= 2 && size <= 20) {
+                currentSize = size;
+                createGame(size);
+                shuffleTiles();
+                saveGameState();
+            }
+        });
+
+        // Перемешивание плиток
+        shuffleBtn.addEventListener('click', shuffleTiles);
+
+        // Автоподсветка
+        autoHighlightBtn.addEventListener('click', toggleAutoHighlight);
+
+        // Инициализация игры
+        initSliders();
+        loadGameState() || createGame(4);
+        shuffleTiles();
+        updateColors();
+    </script>
+</body>
+</html>            border-radius: 5px;
         }
 
         input[type="number"] {
