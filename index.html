@@ -823,6 +823,42 @@
         // Автоподсветка
         autoHighlightBtn.addEventListener('click', toggleAutoHighlight);
 
+        // Управление стрелочками
+        document.addEventListener('keydown', (e) => {
+            const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
+            const emptyTileCol = emptyTileIndex % currentSize;
+            let tileToMoveIndex = -1;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (emptyTileRow < currentSize - 1) {
+                        tileToMoveIndex = emptyTileIndex + currentSize;
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (emptyTileRow > 0) {
+                        tileToMoveIndex = emptyTileIndex - currentSize;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (emptyTileCol < currentSize - 1) {
+                        tileToMoveIndex = emptyTileIndex + 1;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (emptyTileCol > 0) {
+                        tileToMoveIndex = emptyTileIndex - 1;
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            if (tileToMoveIndex !== -1 && tileToMoveIndex >= 0 && tileToMoveIndex < tiles.length) {
+                moveTile(tileToMoveIndex, currentSize);
+            }
+        });
+
         // Инициализация игры
         initSliders();
         loadGameState() || createGame(4);
