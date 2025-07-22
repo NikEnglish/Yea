@@ -1,1 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пятнашкинс🎀</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+        }
 
+        .game-field {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            border: 2px solid #4caf50;
+            touch-action: none;
+            border-radius: 10px;
+            background-color: #fff;
+            transition: width 0.5s ease, height 0.5s ease;
+            opacity: 1;
+        }
+
+        .tile {
+            background-color: #ffeb3b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: transform 0.3s ease, opacity 0.5s ease;
+            position: absolute;
+            width: 70px; /* Размер плитки */
+            height: 70px; /* Размер плитки */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .tile.show {
+            opacity: 1;
+        }
+
+        .tile.correct {
+            border: 2px solid #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+
+        .empty-tile {
+            background-color: transparent;
+            color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .color-picker-container {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="color"] {
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #modeSwitcher {
+            padding: 8px 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+            max-width: 150px;
+            width: 100%;
+        }
+
+        #modeSwitcher:hover {
+            background-color: #45a049;
+        }
+
+        .game-controls {
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .color-picker-container,
+        .game-controls {
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .tile {
+                width: 60px; /* Уменьшаем плитки для мобильных */
+                height: 60px; /* Уменьшаем плитки для мобильных */
+                font-size: 30px; /* Меньший размер шрифта */
+            }
+
+            .game-field {
+                gap: 4px;
+                margin: 15px auto;
+            }
+
+            #modeSwitcher {
+                padding: 6px 10px;
+                font-size: 12px;
+                width: 90%;
+            }
+
+            .color-picker-container {
+                font-size: 12px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="game-controls">
+        <h1>Пятнашкинс🎀</h1>
+        <div class="game-field" id="gameField"></div>
+        <div class="color-picker-container">
+            <label for="tileColor">Выберите цвет плиток:</label>
+            <input type="color" id="tileColor" value="#ffeb3b">
+        </div>
+        <select id="modeSwitcher">
+            <option value="3">3x3</option>
+            <option value="4" selected>4x4</option>
+            <option value="5">5x5</option>
+            <option value="6">6x6</option>
+            <option value="7">7x7</option>
+            <option value="8">8x8</option>
+            <option value="9">9x9</option>
+            <option value="10">10x10</option>
+        </select>
+    </div>
+
+    <script>
+        const gameField = document.getElementById('gameField');
+        const modeSwitcher = document.getElementById('modeSwitcher');
+        const tileColorPicker = document.getElementById('tileColor');
+        let tiles = [];
+        let emptyTileIndex = 15;
+        let swipeStartX, swipeStartY;
+        let currentColor = '#ffeb3b';
+        let currentSize = 4; // Начальный размер поля
+
+        // Функция для создания игрового поля
+        function createGame(size) {
+            gameField.innerHTML = '';
+            tiles = [];
+            emptyTileIndex = size * size - 1;
+
+            // Устанавливаем размеры поля
+            gameField.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            gameField.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+            gameField.style.width = `${size * 70}px`; // 70px (плитка)
+            gameField.style.height = `${size * 70}px`;
+
+            // Создаем плитки
+            for (let i = 1; i <= size * size - 1; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.textContent = i;
+                tile.id = `tile-${i}`;
+                tiles.push(tile);
+                gameField.appendChild(tile);
+            }
+
+            // Создаем пустую плитку
+            const emptyTile = document.createElement('div');
+            emptyTile.className = 'empty-tile';
+            emptyTile.id = 'empty-tile';
+            tiles.push(emptyTile);
+            gameField.appendChild(emptyTile);
+
+            // Рисуем плитки
+            renderTiles(size);
+        }
+
+        // Функция для перемешивания плиток
+        function shuffleTiles() {
+            // Скрываем плитки перед перемешиванием
+            tiles.forEach(tile => tile.classList.remove('show'));
+
+            setTimeout(() => {
+                for (let i = tiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+                }
+                emptyTileIndex = tiles.findIndex(tile => tile.id === 'empty-tile');
+                renderTiles(currentSize);
+
+                // Плавно показываем плитки после перемешивания
+                tiles.forEach(tile => tile.classList.add('show'));
+            }, 500); // Задержка перед перемешиванием плиток
+        }
+
+        // Функция для проверки допустимости хода
+        function isValidMove(fromIndex, toIndex, size) {
+            const rowDiff = Math.abs(Math.floor(fromIndex / size) - Math.floor(toIndex / size));
+            const colDiff = Math.abs((fromIndex % size) - (toIndex % size));
+            return rowDiff + colDiff === 1;
+        }
+
+        // Функция для перемещения плитки
+        function moveTile(tileIndex, size) {
+            if (isValidMove(tileIndex, emptyTileIndex, size)) {
+                [tiles[emptyTileIndex], tiles[tileIndex]] = [tiles[tileIndex], tiles[emptyTileIndex]];
+                emptyTileIndex = tileIndex;
+                renderTiles(size);
+                highlightCorrectTiles(size); // Подсветка верных плиток
+                saveGameState(); // Сохраняем состояние игры после каждого хода
+
+                if (checkWin(size)) {
+                    showCongratulationsMessage();
+                }
+            }
+        }
+
+        // Функция для проверки победы
+        function checkWin(size) {
+            for (let i = 0; i < size * size - 1; i++) {
+                if (parseInt(tiles[i].textContent) !== i + 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Функция для отображения сообщения о победе
+        function showCongratulationsMessage() {
+            alert("Поздравляю! Вы собрали все плитки правильно!");
+            shuffleTiles();
+        }
+
+        // Функция для отрисовки плиток
+        function renderTiles(size) {
+            tiles.forEach((tile, index) => {
+                const row = Math.floor(index / size);
+                const col = index % size;
+                tile.style.transform = `translate(${col * 70}px, ${row * 70}px)`; // Учитываем отступы
+            });
+        }
+
+        // Функция для сохранения состояния игры
+        function saveGameState() {
+            const tileNumbers = tiles.map(tile => tile.textContent || '');
+            const gameState = {
+                size: currentSize,
+                tiles: tileNumbers,
+                emptyTileIndex: emptyTileIndex,
+                color: currentColor
+            };
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Функция для загрузки состояния игры
+        function loadGameState() {
+            const savedState = localStorage.getItem('gameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                currentSize = gameState.size;
+                currentColor = gameState.color;
+                createGame(currentSize);
+                tiles.forEach((tile, index) => {
+                    tile.textContent = gameState.tiles[index];
+                });
+                emptyTileIndex = gameState.emptyTileIndex;
+                renderTiles(currentSize);
+                updateTileColors(currentColor);
+                highlightCorrectTiles(currentSize); // Подсветка верных плиток при загрузке
+            }
+        }
+
+        // Функция для проверки и подсветки верных плиток
+        function highlightCorrectTiles(size) {
+            tiles.forEach((tile, index) => {
+                if (tile.textContent && parseInt(tile.textContent) === index + 1) {
+                    tile.classList.add('correct');
+                } else {
+                    tile.classList.remove('correct');
+                }
+            });
+        }
+
+        // Обработчик свайпов (тач-событий)
+        gameField.addEventListener('touchstart', (e) => {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+        });
+
+        gameField.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+
+        gameField.addEventListener('touchend', (e) => {
+            const swipeEndX = e.changedTouches[0].clientX;
+            const swipeEndY = e.changedTouches[0].clientY;
+
+            const deltaX = Math.abs(swipeEndX - swipeStartX);
+            const deltaY = Math.abs(swipeEndY - swipeStartY);
+
+            let direction;
+            if (deltaX > deltaY) {
+                direction = swipeEndX < swipeStartX ? 'left' : 'right';
+            } else if (deltaY > deltaX) {
+                direction = swipeEndY < swipeStartY ? 'up' : 'down';
+            } else {
+                return; // Игнорируем диагональные свайпы
+            }
+
+            const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
+            const emptyTileCol = emptyTileIndex % currentSize;
+
+            let tileToMove;
+            switch (direction) {
+                case 'left':
+                    tileToMove = tiles[emptyTileIndex + 1];
+                    break;
+                case 'right':
+                    tileToMove = tiles[emptyTileIndex - 1];
+                    break;
+                case 'up':
+                    tileToMove = tiles[emptyTileIndex + currentSize];
+                    break;
+                case 'down':
+                    tileToMove = tiles[emptyTileIndex - currentSize];
+                    break;
+            }
+
+            if (tileToMove && isValidMove(tiles.indexOf(tileToMove), emptyTileIndex, currentSize)) {
+                moveTile(tiles.indexOf(tileToMove), currentSize);
+            }
+        });
+
+        document.getElementById('tileColor').addEventListener('change', (e) => {
+            currentColor = e.target.value;
+            updateTileColors(currentColor);
+            saveGameState(); // Сохраняем состояние игры после изменения цвета
+        });
+
+        function updateTileColors(color) {
+            tiles.forEach(tile => {
+                if (!tile.classList.contains('empty-tile')) {
+                    tile.style.backgroundColor = color;
+                }
+            });
+        }
+
+        modeSwitcher.addEventListener('change', function() {
+            const size = parseInt(this.value);
+            currentSize = size;
+            createGame(size);
+            shuffleTiles();
+        });
+
+        createGame(4); // Начальное создание игры с 4x4
+        shuffleTiles();
+    </script>
+</body>
+</html>
