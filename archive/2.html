@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пятнашкинс🎀</title>
+    <style>
+        .game-field {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            width: 375px;
+            height: 375px;
+            margin: 40px auto;
+            border: 1px solid black;
+            touch-action: none;
+        }
+        
+        .tile {
+            background-color: #ffeb3b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .empty-tile {
+            background-color: transparent;
+            color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+        
+        .color-picker-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        #mode-switcher {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-field" id="gameField"></div>
+    
+    <div class="color-picker-container">
+        <label for="tileColor">Выберите цвет плиток:</label>
+        <input type="color" id="tileColor" value="#ffeb3b">
+    </div>
 
+    <select id="modeSwitcher">
+        <option value="normal">Обычные пятнашки (4x4)</option>
+        <option value="large">Большие пятнашки (5x5)</option>
+    </select>
+
+    <script>
+        const gameField = document.getElementById('gameField');
+        const modeSwitcher = document.getElementById('modeSwitcher');
+        let tiles = [];
+        let emptyTileIndex = 15;
+        let swipeStartX, swipeStartY;
+        let currentColor = '#ffeb3b';
+        let isLargeMode = false;
+
+        function createGame() {
+            gameField.innerHTML = '';
+            tiles = [];
+            emptyTileIndex = isLargeMode ? 23 : 15;
+
+            for (let i = 1; i <= (isLargeMode ? 24 : 15); i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.textContent = i;
+                tile.id = `tile-${i}`;
+                tiles.push(tile);
+                gameField.appendChild(tile);
+            }
+            
+            const emptyTile = document.createElement('div');
+            emptyTile.className = 'empty-tile';
+            emptyTile.id = 'empty-tile';
+            tiles.push(emptyTile);
+            gameField.appendChild(emptyTile);
+        }
+
+        function shuffleTiles() {
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+            emptyTileIndex = tiles.findIndex(tile => tile.id === 'empty-tile');
+        }
+
+        function isValidMove(fromIndex, toIndex) {
+            const rowDiff = Math.abs(Math.floor(fromIndex / (isLargeMode ? 5 : 4)) - Math.floor(toIndex / (isLargeMode ? 5 : 4)));
+            const colDiff = Math.abs((fromIndex % (isLargeMode ? 5 : 4)) - (toIndex % (isLargeMode ? 5 : 4)));
+            return rowDiff + colDiff === 1;
+        }
+
+        function moveTile(tileIndex) {
+            const tile = tiles[tileIndex];
+            if (isValidMove(tileIndex, emptyTileIndex)) {
+                [tiles[emptyTileIndex], tiles[tileIndex]] = [tile, tiles[emptyTileIndex]];
+                emptyTileIndex = tileIndex;
+                renderTiles();
+                
+                if (checkWin()) {
+                    showCongratulationsMessage();
+                }
+            }
+        }
+
+        function checkWin() {
+            for (let i = 0; i < tiles.length - 1; i++) {
+                if (parseInt(tiles[i].textContent) !== i + 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function showCongratulationsMessage() {
+            alert("Поздравляю! Вы собрали все плитки правильно!");
+            shuffleTiles();
+            renderTiles();
+        }
+
+        function renderTiles() {
+            tiles.forEach((tile, index) => {
+                const row = Math.floor(index / (isLargeMode ? 5 : 4));
+                const col = index % (isLargeMode ? 5 : 4);
+                tile.style.transform = `translate(${col * (isLargeMode ? 75 : 70)}px, ${row * (isLargeMode ? 75 : 70)}px)`;
+            });
+        }
+
+        gameField.addEventListener('touchstart', (e) => {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+        });
+
+        gameField.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+
+        gameField.addEventListener('touchend', (e) => {
+            const swipeEndX = e.changedTouches[0].clientX;
+            const swipeEndY = e.changedTouches[0].clientY;
+
+            const deltaX = Math.abs(swipeEndX - swipeStartX);
+            const deltaY = Math.abs(swipeEndY - swipeStartY);
+
+            let direction;
+            if (deltaX > deltaY) {
+                direction = swipeEndX < swipeStartX ? 'left' : 'right';
+            } else if (deltaY > deltaX) {
+                direction = swipeEndY < swipeStartY ? 'up' : 'down';
+            } else {
+                return; // Игнорируем диагональные свайпы
+            }
+
+            const emptyTileRow = Math.floor(emptyTileIndex / (isLargeMode ? 5 : 4));
+            const emptyTileCol = emptyTileIndex % (isLargeMode ? 5 : 4);
+
+            let tileToMove;
+            switch (direction) {
+                case 'left':
+                    tileToMove = tiles[emptyTileIndex + 1];
+                    break;
+                case 'right':
+                    tileToMove = tiles[emptyTileIndex - 1];
+                    break;
+                case 'up':
+                    tileToMove = tiles[emptyTileIndex + (isLargeMode ? 5 : 4)];
+                    break;
+                case 'down':
+                    tileToMove = tiles[emptyTileIndex - (isLargeMode ? 5 : 4)];
+                    break;
+            }
+
+            if (tileToMove && isValidMove(tiles.indexOf(tileToMove), emptyTileIndex)) {
+                moveTile(tiles.indexOf(tileToMove));
+            }
+        });
+
+        document.getElementById('tileColor').addEventListener('change', (e) => {
+            currentColor = e.target.value;
+            updateTileColors(currentColor);
+        });
+
+        function updateTileColors(color) {
+            tiles.forEach(tile => {
+                if (!tile.classList.contains('empty-tile')) {
+                    tile.style.backgroundColor = color;
+                }
+            });
+        }
+
+        modeSwitcher.addEventListener('change', function() {
+            isLargeMode = this.value === 'large';
+            createGame();
+            shuffleTiles();
+            renderTiles();
+        });
+
+        createGame();
+        shuffleTiles();
+        renderTiles();
+    </script>
+</body>
+</html>
