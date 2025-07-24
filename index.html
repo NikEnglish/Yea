@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Стили остаются без изменений */
         :root {
             --primary-color: #6c5ce7;
             --secondary-color: #a29bfe;
@@ -61,7 +62,6 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
         .logo {
@@ -75,13 +75,6 @@
         .logo i {
             color: var(--accent-color);
         }
-        
-        .header-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
 
         .score-display {
             background-color: rgba(255, 255, 255, 0.2);
@@ -92,12 +85,13 @@
             align-items: center;
             gap: 8px;
             backdrop-filter: blur(5px);
+            margin-left: 10px; /* Отступ между показателями */
         }
 
         .score-display i {
             color: var(--warning-color);
         }
-        
+
         /* Main content */
         .main-content {
             display: flex;
@@ -114,7 +108,7 @@
             margin-bottom: 30px;
             width: 100%;
             overflow: auto;
-            position: relative;
+            position: relative; /* Для позиционирования подсказки */
         }
 
         .game-field {
@@ -138,7 +132,7 @@
             font-size: 24px;
             font-weight: bold;
             border-radius: 10px;
-            transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
             position: absolute;
             width: 60px;
             height: 60px;
@@ -147,8 +141,8 @@
             color: var(--dark-color);
             border: 2px solid transparent;
             user-select: none;
-            overflow: hidden;
-            opacity: 0;
+            overflow: hidden; /* Для режима с картинкой */
+            opacity: 0; /* Изначально скрыты для анимации */
         }
 
         .tile.show {
@@ -174,7 +168,7 @@
             width: 100%;
             height: 100%;
             border-radius: inherit;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease; /* Плавный переход для цифр в режиме "Память" */
         }
 
         .tile.highlight .tile-inner {
@@ -202,28 +196,32 @@
             color: transparent;
             border: none;
             box-shadow: none;
-            opacity: 1 !important;
+            opacity: 1 !important; /* Пустая плитка всегда видима */
         }
 
         .tile.obstacle-tile {
-            background-color: #b2bec3;
+            background-color: #b2bec3; /* Серый цвет для препятствий */
             cursor: not-allowed;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-            pointer-events: none;
+            pointer-events: none; /* Запрет взаимодействия */
         }
         
         .tile.hidden-number .tile-inner {
-            opacity: 0;
+            opacity: 0; /* Скрываем только цифру */
         }
 
         .tile.hidden-number.revealed .tile-inner {
-            opacity: 1;
+            opacity: 1; /* Показываем цифру */
+        }
+        
+        .tile.darkness-hidden,
+        .tile.hidden-path-hidden {
+            background-color: #444; /* Темный фон для скрытых плиток */
+            color: transparent; /* Скрываем текст */
+            box-shadow: none;
         }
 
-        .tile.hidden-path-hidden .tile-inner {
-            opacity: 0;
-        }
-
+        /* Hint for Time mode */
         .hint-message {
             position: absolute;
             top: 50%;
@@ -236,7 +234,7 @@
             font-size: 1.1rem;
             text-align: center;
             z-index: 50;
-            pointer-events: none;
+            pointer-events: none; /* Не блокировать события мыши/касания */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -253,8 +251,8 @@
             justify-content: center;
             margin-bottom: 20px;
             position: relative;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-wrap: wrap; /* Для адаптивности */
+            gap: 10px; /* Отступ между кнопками */
         }
 
         .tab-button {
@@ -286,39 +284,43 @@
         .tab-content {
             display: none;
         }
-
+        
         .tab-content.active {
             display: block;
         }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
-        /* ✨ ИЗМЕНЕНИЕ: Стили для сеток и карточек во всех вкладках, включая анимацию */
-        .settings-grid, .achievements-grid, .modes-grid, .stats-grid, .archive-grid {
+        /* Settings, Achievements, Modes, Stats Grids */
+        .settings-grid, .achievements-grid, .modes-grid, .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
         
-        .card {
+        .settings-card, .achievement-card, .mode-card, .stats-card {
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            /* Начальное состояние для анимации */
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0; /* Изначально скрыты для анимации */
+            animation: fadeInUp 0.5s ease-out forwards;
         }
-
-        .card:hover {
-            transform: translateY(-5px); /* Подъем при наведении остается, но теперь он будет совмещаться с анимацией появления */
+        
+        .settings-card:hover, .achievement-card:hover, .mode-card:hover, .stats-card:hover {
+            transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Класс для видимых карточек */
-        .card.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         .settings-card h3 {
@@ -334,6 +336,7 @@
             color: var(--accent-color);
         }
         
+        /* Statistics Tab */
         .stats-card {
             display: flex;
             flex-direction: column;
@@ -361,7 +364,7 @@
         }
         
         .stats-list-card {
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Span full width */
         }
         
         .stats-list-card h3 {
@@ -372,7 +375,7 @@
         .stats-list {
             list-style: none;
             padding: 0;
-            max-height: 300px;
+            max-height: 300px; /* Увеличил высоту для прокрутки */
             overflow-y: auto;
             border: 1px solid #dfe6e9;
             border-radius: 10px;
@@ -385,7 +388,7 @@
             padding: 8px 12px;
             border-radius: 8px;
             transition: background-color 0.2s;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Для адаптивности */
         }
 
         .stats-list li:nth-child(odd) {
@@ -398,13 +401,13 @@
 
         .stats-list-label {
             font-weight: 600;
-            flex-basis: 60%;
+            flex-basis: 60%; /* Для адаптивности */
         }
 
         .stats-list-value {
             font-weight: 700;
             color: var(--primary-color);
-            flex-basis: 35%;
+            flex-basis: 35%; /* Для адаптивности */
             text-align: right;
         }
         
@@ -422,15 +425,16 @@
             justify-content: space-between;
         }
 
+
         .control-row {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 15px;
         }
 
         .control-label {
-            min-width: 120px;
-            font-size: 14px;
+            font-size: 16px;
             margin-right: 10px;
             color: var(--dark-color);
         }
@@ -488,8 +492,8 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
-            margin-right: 10px;
-            margin-bottom: 10px;
+            margin-right: 10px; /* Отступ между кнопками */
+            margin-bottom: 10px; /* Отступ для адаптивности */
         }
 
         .btn:hover {
@@ -512,6 +516,55 @@
         .btn-block {
             display: block;
             width: 100%;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #00a884;
+            box-shadow: 0 6px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            box-shadow: 0 4px 10px rgba(253, 203, 110, 0.3);
+        }
+
+        .btn-warning:hover {
+            background: #f5b74f;
+            box-shadow: 0 6px 15px rgba(253, 203, 110, 0.4);
+        }
+        
+        .btn-info {
+            background: var(--info-color);
+            box-shadow: 0 4px 10px rgba(9, 132, 227, 0.3);
+        }
+
+        .btn-info:hover {
+            background: #0984e3;
+            box-shadow: 0 6px 15px rgba(9, 132, 227, 0.4);
+        }
+
+
+        .btn-danger {
+            background: var(--danger-color);
+            box-shadow: 0 4px 10px rgba(225, 112, 85, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #d15f44;
+            box-shadow: 0 6px 15px rgba(225, 112, 85, 0.4);
+        }
+
+        .btn.active {
+            background: var(--danger-color);
+        }
+
+        .btn.active:hover {
+            background: #d15f44;
         }
 
         .input-group {
@@ -540,17 +593,20 @@
         }
         
         .input-group input[type="file"] {
-            display: none;
+            display: none; /* Скрываем стандартный инпут */
         }
 
+        /* Achievements tab */
         .achievements-intro {
             text-align: center;
             font-size: 1rem;
             color: #636e72;
             margin: 0 auto 20px;
             max-width: 600px;
+            background: white;
             padding: 15px;
             border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
         .achievement-card {
@@ -619,6 +675,12 @@
             font-size: 0.9rem;
         }
 
+        .achievement-date {
+            font-size: 0.8rem;
+            color: #b2bec3;
+            margin-top: 5px;
+        }
+
         .ribbon {
             position: absolute;
             top: 10px;
@@ -632,6 +694,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
+        /* Modes tab */
         .mode-card {
             display: flex;
             flex-direction: column;
@@ -670,36 +733,8 @@
             font-size: 0.9rem;
             color: #636e72;
         }
-        
-        /* ✨ ИЗМЕНЕНИЕ: Стили для карточек архива */
-        .archive-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            text-decoration: none;
-            color: var(--dark-color);
-        }
-        
-        .archive-card.current-version {
-            background-color: rgba(108, 92, 231, 0.1);
-            border: 2px solid var(--primary-color);
-            cursor: default;
-        }
-        
-        .archive-card .version-date {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        .archive-card .version-label {
-            font-size: 0.9rem;
-            color: #636e72;
-        }
 
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -755,6 +790,7 @@
             margin: 0 5px;
         }
 
+        /* Animations */
         @keyframes confetti {
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
@@ -777,6 +813,7 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Responsive */
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -794,7 +831,7 @@
                 font-size: 0.9rem;
             }
             
-            .settings-grid, .achievements-grid, .modes-grid, .stats-grid, .archive-grid {
+            .settings-grid, .achievements-grid, .modes-grid, .stats-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -839,13 +876,11 @@
                 <i class="fas fa-gamepad"></i>
                 <span>Пятнашкинс🎀</span>
             </div>
-            <div class="header-info">
-                <div class="score-display" id="scoreDisplay">
-                    <i class="fas fa-star"></i>
-                    <span>Очки: 0</span>
-                </div>
-                <div class="score-display" id="gameStatusDisplay"></div>
+            <div class="score-display" id="scoreDisplay">
+                <i class="fas fa-star"></i>
+                <span>Очки: 0</span>
             </div>
+            <div class="score-display" id="gameStatusDisplay"></div>
         </div>
     </header>
 
@@ -858,13 +893,15 @@
                 </div>
             </div>
 
-            <!-- ✨ ИЗМЕНЕНИЕ: Добавлена вкладка "Архив" -->
             <div class="tabs">
-                <button class="tab-button active" data-tab="settings">
-                    <i class="fas fa-cog"></i> Настройки
+                <button class="tab-button active" data-tab="game">
+                    <i class="fas fa-puzzle-piece"></i> Игра
                 </button>
                 <button class="tab-button" data-tab="modes">
                     <i class="fas fa-chess-board"></i> Режимы
+                </button>
+                <button class="tab-button" data-tab="settings">
+                    <i class="fas fa-cog"></i> Настройки
                 </button>
                 <button class="tab-button" data-tab="achievements">
                     <i class="fas fa-trophy"></i> Достижения
@@ -872,43 +909,117 @@
                 <button class="tab-button" data-tab="stats">
                     <i class="fas fa-chart-bar"></i> Статистика
                 </button>
-                <button class="tab-button" data-tab="archive">
-                    <i class="fas fa-archive"></i> Архив
-                </button>
             </div>
 
-            <div class="tab-content active" id="settings-tab">
+            <div class="tab-content active" id="game-tab">
                 <div class="settings-grid">
-                    <!-- Карточки настроек будут здесь -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-sliders-h"></i> Основные настройки</h3>
+                        <div class="control-row">
+                            <span class="control-label">Размер поля:</span>
+                            <input type="range" id="sizeSlider" min="2" max="20" value="4" step="1">
+                            <span class="range-value" id="sizeValue">4</span>
+                        </div>
+                        <button class="btn btn-success" id="applySize">
+                            <i class="fas fa-check"></i> Применить размер
+                        </button>
+                        <button class="btn btn-warning" id="shuffleBtn">
+                            <i class="fas fa-random"></i> Перемешать
+                        </button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3><i class="fas fa-palette"></i> Внешний вид</h3>
+                        <div class="control-row">
+                            <span class="control-label">Размер плиток:</span>
+                            <input type="range" id="tileSizeSlider" min="30" max="100" value="60" step="1">
+                            <span class="range-value" id="tileSizeValue">60px</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Закругление:</span>
+                            <input type="range" id="tileRadiusSlider" min="0" max="50" value="10" step="1">
+                            <span class="range-value" id="tileRadiusValue">10px</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Размер шрифта:</span>
+                            <input type="range" id="fontSizeSlider" min="12" max="48" value="24" step="1">
+                            <span class="range-value" id="fontSizeValue">24px</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3><i class="fas fa-fill-drip"></i> Цвета</h3>
+                        <div class="control-row">
+                            <span class="control-label">Цвет плиток:</span>
+                            <input type="color" id="tileColor" value="#ffeaa7">
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Цвет фона:</span>
+                            <input type="color" id="bgColor" value="#f5f6fa">
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Цвет рамки:</span>
+                            <input type="color" id="borderColor" value="#6c5ce7">
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Цвет текста:</span>
+                            <input type="color" id="textColor" value="#2d3436">
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Цвет подсветки:</span>
+                            <input type="color" id="highlightColor" value="#74b9ff">
+                        </div>
+                        <div class="control-row">
+                            <span class="control-label">Цвет правильных:</span>
+                            <input type="color" id="correctColor" value="#55efc4">
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3><i class="fas fa-search"></i> Поиск и подсветка</h3>
+                        <div class="input-group">
+                            <input type="number" id="numberInput" min="1" placeholder="Введите число" class="form-input">
+                        </div>
+                        <button class="btn" id="findNumberBtn">
+                            <i class="fas fa-search"></i> Найти число
+                        </button>
+                        <button class="btn" id="autoHighlightBtn">
+                            <i class="fas fa-magic"></i> Автоподсветка
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div class="tab-content" id="modes-tab">
-                <div class="modes-grid">
-                    <!-- Карточки режимов будут здесь -->
+                <div class="modes-grid" id="modesGrid">
+                    </div>
+            </div>
+            
+            <div class="tab-content" id="settings-tab">
+                <div class="settings-grid">
+                     <div class="settings-card">
+                        <h3><i class="fas fa-bullhorn"></i> Обратная связь</h3>
+                        <div class="control-row">
+                            <span class="control-label">Вибрация</span>
+                            <button class="btn" id="vibrationToggleBtn">
+                                <i class="fas fa-check"></i> Включена
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="tab-content" id="achievements-tab">
-                 <div class="achievements-intro card">
+                 <div class="achievements-intro">
                     ✨ Докажите своё мастерство, открыв все достижения! ✨
                 </div>
-                <div class="achievements-grid">
-                    <!-- Карточки достижений будут здесь -->
+                <div class="achievements-grid" id="achievementsGrid">
                 </div>
             </div>
             
             <div class="tab-content" id="stats-tab">
-                <div class="stats-grid">
-                     <!-- Карточки статистики будут здесь -->
-                </div>
-            </div>
-            
-            <!-- ✨ ИЗМЕНЕНИЕ: Новая вкладка для архива -->
-            <div class="tab-content" id="archive-tab">
-                <div class="archive-grid">
-                    <!-- Карточки архива будут здесь -->
-                </div>
+                <div class="stats-grid" id="statsGrid">
+                     </div>
             </div>
         </div>
     </main>
@@ -917,23 +1028,115 @@
         <div class="modal-content">
             <h3 id="modalTitle"></h3>
             <p id="modalMessage"></p>
-            <button class="btn" id="modalCloseBtn">ОК</button>
+            <button class="btn btn-primary" id="modalCloseBtn">ОК</button>
         </div>
     </div>
 
     <script>
         // DOM elements
         const gameField = document.getElementById('gameField');
+        const tileColorPicker = document.getElementById('tileColor');
+        const numberInput = document.getElementById('numberInput');
+        const findNumberBtn = document.getElementById('findNumberBtn');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        const applySizeBtn = document.getElementById('applySize');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const autoHighlightBtn = document.getElementById('autoHighlightBtn');
+        const bgColorPicker = document.getElementById('bgColor');
+        const borderColorPicker = document.getElementById('borderColor');
+        const textColorPicker = document.getElementById('textColor');
+        const highlightColorPicker = document.getElementById('highlightColor');
+        const correctColorPicker = document.getElementById('correctColor');
+        const tileSizeSlider = document.getElementById('tileSizeSlider');
+        const tileSizeValue = document.getElementById('tileSizeValue');
+        const tileRadiusSlider = document.getElementById('tileRadiusSlider');
+        const tileRadiusValue = document.getElementById('tileRadiusValue');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const gameStatusDisplay = document.getElementById('gameStatusDisplay');
+        const achievementsGrid = document.getElementById('achievementsGrid');
+        const modesGrid = document.getElementById('modesGrid');
+        const statsGrid = document.getElementById('statsGrid');
         const messageModal = document.getElementById('messageModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
         const modalCloseBtn = document.getElementById('modalCloseBtn');
         const hintMessage = document.getElementById('hintMessage');
+        const vibrationToggleBtn = document.getElementById('vibrationToggleBtn');
         
+        // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    content.querySelectorAll('.settings-card, .achievement-card, .mode-card, .stats-card').forEach(card => {
+                         card.style.animation = 'none';
+                         card.style.opacity = '0';
+                    });
+                });
+                
+                const newTabContent = document.getElementById(`${tabId}-tab`);
+                newTabContent.classList.add('active');
+                
+                const cards = newTabContent.querySelectorAll('.settings-card, .achievement-card, .mode-card, .stats-card');
+                cards.forEach((card, index) => {
+                    card.style.animation = `fadeInUp 0.5s ease-out ${index * 0.07}s forwards`;
+                });
+            });
+        });
+        
+        const vibrationManager = {
+            enabled: true,
+            load() {
+                const saved = localStorage.getItem('vibrationEnabled_v1');
+                this.enabled = saved !== 'false';
+                this.updateButton();
+            },
+            save() {
+                localStorage.setItem('vibrationEnabled_v1', this.enabled);
+            },
+            toggle() {
+                this.enabled = !this.enabled;
+                this.save();
+                this.updateButton();
+            },
+            updateButton() {
+                if (this.enabled) {
+                    vibrationToggleBtn.innerHTML = `<i class="fas fa-check"></i> Включена`;
+                    vibrationToggleBtn.classList.remove('btn-danger');
+                    vibrationToggleBtn.classList.add('btn-success');
+                } else {
+                    vibrationToggleBtn.innerHTML = `<i class="fas fa-times"></i> Выключена`;
+                    vibrationToggleBtn.classList.remove('btn-success');
+                    vibrationToggleBtn.classList.add('btn-danger');
+                }
+            },
+            vibrate(pattern) {
+                if (this.enabled && 'vibrate' in navigator) {
+                    try {
+                         navigator.vibrate(pattern);
+                    } catch (e) {
+                        console.error("Vibration failed:", e);
+                    }
+                }
+            },
+            click: function() { this.vibrate(15); },
+            shuffle: function() { this.vibrate([50, 30, 50]); },
+            tileAppear: function() { this.vibrate(5); },
+            win: function() { this.vibrate([100, 50, 100, 50, 100]); },
+            error: function() { this.vibrate([70, 40, 70]); }
+        };
+
 
         // Game variables
         let tiles = [];
@@ -955,748 +1158,107 @@
         let movesLeft = 0;
         let targetOrder = [];
         let obstacleTiles = new Set();
-        let imageModeData = { imageUrl: '', image: null, canvas: null, ctx: null };
+        let imageModeData = {
+            imageUrl: '',
+            image: null,
+            canvas: null,
+            ctx: null
+        };
         let memoryRevealTimeout = null;
         let isTimeModeGameStarted = false;
+        let darknessRevealedTiles = new Set();
         let teleportMoveCounter = 0;
 
+        // Achievement Data
         const achievementsData = [
-             {
-                id: 'legend',
-                title: 'Легенда Пятнашек',
-                description: 'Получить все остальные достижения в игре. Вы - настоящий мастер!',
-                icon: 'fa-crown',
-                points: 1000,
-                condition: (stats) => completedAchievements.length >= (achievementsData.length - 1),
-                progress: (stats) => Math.min(completedAchievements.length / (achievementsData.length - 1), 1)
-            },
-            {
-                id: 'first_move',
-                title: 'Первый шаг',
-                description: 'Сделайте первый ход в игре.',
-                icon: 'fa-hand-point-right',
-                points: 10,
-                condition: (stats) => stats.totalMoves > 0,
-                progress: (stats) => stats.totalMoves > 0 ? 1 : 0
-            },
-            {
-                id: 'first_win',
-                title: 'Начало положено',
-                description: 'Завершите свою первую игру.',
-                icon: 'fa-flag-checkered',
-                points: 50,
-                condition: (stats) => stats.totalGamesWon > 0,
-                progress: (stats) => stats.totalGamesWon > 0 ? 1 : 0
-            },
-            {
-                id: 'shuffler_10',
-                title: 'Перемешиватель',
-                description: 'Перемешайте плитки 10 раз.',
-                icon: 'fa-random',
-                points: 25,
-                condition: (stats) => stats.shuffles >= 10,
-                progress: (stats) => Math.min(stats.shuffles / 10, 1)
-            },
-            {
-                id: 'explorer_10',
-                title: 'Любопытный',
-                description: 'Найдите 10 чисел с помощью поиска.',
-                icon: 'fa-search',
-                points: 30,
-                condition: (stats) => stats.numbersFound >= 10,
-                progress: (stats) => Math.min(stats.numbersFound / 10, 1)
-            },
-             {
-                id: 'color_changer',
-                title: 'Художник',
-                description: 'Измените все 5 типов цветов в настройках.',
-                icon: 'fa-paint-brush',
-                points: 20,
-                condition: (stats) => stats.colorsChanged.size >= 5,
-                progress: (stats) => Math.min(stats.colorsChanged.size / 5, 1)
-            },
-            {
-                id: 'size_master_small',
-                title: 'Миниатюрист',
-                description: 'Выиграйте игру на поле 2x2.',
-                icon: 'fa-compress-arrows-alt',
-                points: 50,
-                condition: (stats) => stats.gamesWonBySize[2] > 0,
-                progress: (stats) => stats.gamesWonBySize[2] > 0 ? 1 : 0
-            },
-             {
-                id: 'size_master_big',
-                title: 'Гроссмейстер',
-                description: 'Выиграйте игру на поле 8x8.',
-                icon: 'fa-expand-arrows-alt',
-                points: 150,
-                condition: (stats) => stats.gamesWonBySize[8] > 0,
-                progress: (stats) => stats.gamesWonBySize[8] > 0 ? 1: 0
-            },
-            {
-                id: 'size_master_titanic',
-                title: 'Титанический Труд',
-                description: 'Выиграйте игру на поле 20x20.',
-                icon: 'fa-globe-americas',
-                points: 500,
-                condition: (stats) => stats.gamesWonBySize[20] > 0,
-                progress: (stats) => stats.gamesWonBySize[20] > 0 ? 1 : 0
-            },
-            {
-                id: 'size_master_all',
-                title: 'Мастер Размеров',
-                description: 'Сыграйте на 5 разных размерах поля.',
-                icon: 'fa-ruler-combined',
-                points: 100,
-                condition: (stats) => stats.playedSizes.size >= 5,
-                progress: (stats) => Math.min(stats.playedSizes.size / 5, 1)
-            },
-            {
-                id: 'mode_explorer',
-                title: 'Режимный исследователь',
-                description: 'Попробуйте 5 разных режимов игры.',
-                icon: 'fa-route',
-                points: 100,
-                condition: (stats) => stats.modesTried.size >= 5,
-                progress: (stats) => Math.min(stats.modesTried.size / 5, 1)
-            },
-            {
-                id: 'mode_master',
-                title: 'Повелитель Режимов',
-                description: 'Попробуйте все доступные режимы игры.',
-                icon: 'fa-dungeon',
-                points: 250,
-                condition: (stats) => stats.modesTried.size >= gameModes.length, 
-                progress: (stats) => Math.min(stats.modesTried.size / gameModes.length, 1)
-            },
-            {
-                id: 'win_classic',
-                title: 'Классик',
-                description: 'Выиграйте в режиме "Классический".',
-                icon: 'fa-th',
-                points: 20,
-                condition: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_time',
-                title: 'Спринтер',
-                description: 'Выиграйте в режиме "На время".',
-                icon: 'fa-stopwatch',
-                points: 30,
-                condition: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_moves',
-                title: 'Тактик',
-                description: 'Выиграйте в режиме "С ограничением ходов".',
-                icon: 'fa-shoe-prints',
-                points: 30,
-                condition: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_reverse',
-                title: 'Реверсер',
-                description: 'Выиграйте в режиме "Обратный".',
-                icon: 'fa-exchange-alt',
-                points: 40,
-                condition: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'collector_10',
-                title: 'Коллекционер',
-                description: 'Выиграйте 10 игр.',
-                icon: 'fa-medal',
-                points: 100,
-                condition: (stats) => stats.totalGamesWon >= 10,
-                progress: (stats) => Math.min(stats.totalGamesWon / 10, 1)
-            },
-            {
-                id: 'collector_50',
-                title: 'Энтузиаст',
-                description: 'Выиграйте 50 игр.',
-                icon: 'fa-award',
-                points: 250,
-                condition: (stats) => stats.totalGamesWon >= 50,
-                progress: (stats) => Math.min(stats.totalGamesWon / 50, 1)
-            },
-            {
-                id: 'mover_1k',
-                title: 'Непоседа',
-                description: 'Сделайте 1000 ходов.',
-                icon: 'fa-walking',
-                points: 50,
-                condition: (stats) => stats.totalMoves >= 1000,
-                progress: (stats) => Math.min(stats.totalMoves / 1000, 1)
-            },
-            {
-                id: 'mover_10k',
-                title: 'Марафонец',
-                description: 'Сделайте 10 000 ходов.',
-                icon: 'fa-running',
-                points: 150,
-                condition: (stats) => stats.totalMoves >= 10000,
-                progress: (stats) => Math.min(stats.totalMoves / 10000, 1)
-            },
-            {
-                id: 'score_1k',
-                title: 'Накопитель',
-                description: 'Наберите 1000 очков (без учета очков за достижения).',
-                icon: 'fa-coins',
-                points: 50,
-                condition: (stats) => stats.totalScore >= 1000,
-                progress: (stats) => Math.min(stats.totalScore / 1000, 1)
-            },
-            {
-                id: 'score_10k',
-                title: 'Богач',
-                description: 'Наберите 10 000 очков (без учета очков за достижения).',
-                icon: 'fa-gem',
-                points: 150,
-                condition: (stats) => stats.totalScore >= 10000,
-                progress: (stats) => Math.min(stats.totalScore / 10000, 1)
-            },
-            {
-                id: 'fast_solver_100',
-                title: 'Быстрый решатель',
-                description: 'Решите головоломку 4x4 менее чем за 100 ходов.',
-                icon: 'fa-bolt',
-                points: 75,
-                condition: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[4] && stats.gameRecords.classic[4].bestMoves < 100,
-                progress: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[4] ? Math.max(0, 1 - (stats.gameRecords.classic[4].bestMoves - 50) / 50) : 0
-            },
-            {
-                id: 'shuffler_50',
-                title: 'Хаос-менеджер',
-                description: 'Перемешайте плитки 50 раз.',
-                icon: 'fa-sync-alt',
-                points: 50,
-                condition: (stats) => stats.shuffles >= 50,
-                progress: (stats) => Math.min(stats.shuffles / 50, 1)
-            },
-            {
-                id: 'explorer_50',
-                title: 'Детектив',
-                description: 'Найдите 50 чисел с помощью поиска.',
-                icon: 'fa-search-plus',
-                points: 60,
-                condition: (stats) => stats.numbersFound >= 50,
-                progress: (stats) => Math.min(stats.numbersFound / 50, 1)
-            },
-            {
-                id: 'autohighlight_user',
-                title: 'Автопилот',
-                description: 'Выиграйте игру, используя автоподсветку.',
-                icon: 'fa-robot',
-                points: 30,
-                condition: (stats) => stats.winsWithAutohighlight > 0,
-                progress: (stats) => stats.winsWithAutohighlight > 0 ? 1 : 0
-            },
-            {
-                id: 'styler',
-                title: 'Стилист',
-                description: 'Измените размер плиток, их закругление и размер шрифта.',
-                icon: 'fa-magic',
-                points: 25,
-                condition: (stats) => stats.styleChanges.size >= 3,
-                progress: (stats) => Math.min(stats.styleChanges.size / 3, 1)
-            },
-            {
-                id: 'win_obstacle',
-                title: 'Преодоление',
-                description: 'Выиграйте в режиме "С препятствиями".',
-                icon: 'fa-ban',
-                points: 50,
-                condition: (stats) => stats.gameRecords.obstacle && stats.gameRecords.obstacle[currentSize] && stats.gameRecords.obstacle[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.obstacle && stats.gameRecords.obstacle[currentSize] && stats.gameRecords.obstacle[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_memory',
-                title: 'Феноменальная память',
-                description: 'Выиграйте в режиме "С памятью".',
-                icon: 'fa-brain',
-                points: 60,
-                condition: (stats) => stats.gameRecords.memory && stats.gameRecords.memory[currentSize] && stats.gameRecords.memory[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.memory && stats.gameRecords.memory[currentSize] && stats.gameRecords.memory[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_image',
-                title: 'Художник-головоломщик',
-                description: 'Выиграйте в режиме "С картинкой".',
-                icon: 'fa-image',
-                points: 80,
-                condition: (stats) => stats.gameRecords.image && stats.gameRecords.image[currentSize] && stats.gameRecords.image[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.image && stats.gameRecords.image[currentSize] && stats.gameRecords.image[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_teleport',
-                title: 'Мастер телепортации',
-                description: 'Выиграйте в режиме "Телепорт".',
-                icon: 'fa-random',
-                points: 75,
-                condition: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_vortex',
-                title: 'Мастер вихря',
-                description: 'Выиграйте в режиме "Вихрь".',
-                icon: 'fa-wind',
-                points: 80,
-                condition: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0 ? 1 : 0
-            },
-            {
-                id: 'win_hidden_path',
-                title: 'Проводник',
-                description: 'Выиграйте в режиме "Скрытый путь".',
-                icon: 'fa-eye-slash',
-                points: 85,
-                condition: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0,
-                progress: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0 ? 1 : 0
-            }
+            { id: 'legend', title: 'Легенда Пятнашек', description: 'Получить все остальные достижения в игре. Вы - настоящий мастер!', icon: 'fa-crown', points: 1000, condition: (stats) => completedAchievements.length >= (achievementsData.length - 1), progress: (stats) => Math.min(completedAchievements.length / (achievementsData.length - 1), 1) },
+            { id: 'first_move', title: 'Первый шаг', description: 'Сделайте первый ход в игре.', icon: 'fa-hand-point-right', points: 10, condition: (stats) => stats.totalMoves > 0, progress: (stats) => stats.totalMoves > 0 ? 1 : 0 },
+            { id: 'first_win', title: 'Начало положено', description: 'Завершите свою первую игру.', icon: 'fa-flag-checkered', points: 50, condition: (stats) => stats.totalGamesWon > 0, progress: (stats) => stats.totalGamesWon > 0 ? 1 : 0 },
+            { id: 'shuffler_10', title: 'Перемешиватель', description: 'Перемешайте плитки 10 раз.', icon: 'fa-random', points: 25, condition: (stats) => stats.shuffles >= 10, progress: (stats) => Math.min(stats.shuffles / 10, 1) },
+            { id: 'explorer_10', title: 'Любопытный', description: 'Найдите 10 чисел с помощью поиска.', icon: 'fa-search', points: 30, condition: (stats) => stats.numbersFound >= 10, progress: (stats) => Math.min(stats.numbersFound / 10, 1) },
+            { id: 'color_changer', title: 'Художник', description: 'Измените все 5 типов цветов в настройках.', icon: 'fa-paint-brush', points: 20, condition: (stats) => stats.colorsChanged.size >= 5, progress: (stats) => Math.min(stats.colorsChanged.size / 5, 1) },
+            { id: 'size_master_small', title: 'Миниатюрист', description: 'Выиграйте игру на поле 2x2.', icon: 'fa-compress-arrows-alt', points: 50, condition: (stats) => stats.gamesWonBySize[2] > 0, progress: (stats) => stats.gamesWonBySize[2] > 0 ? 1 : 0 },
+            { id: 'size_master_big', title: 'Гроссмейстер', description: 'Выиграйте игру на поле 8x8.', icon: 'fa-expand-arrows-alt', points: 150, condition: (stats) => stats.gamesWonBySize[8] > 0, progress: (stats) => stats.gamesWonBySize[8] > 0 ? 1: 0 },
+            { id: 'size_master_titanic', title: 'Титанический Труд', description: 'Выиграйте игру на поле 20x20.', icon: 'fa-globe-americas', points: 500, condition: (stats) => stats.gamesWonBySize[20] > 0, progress: (stats) => stats.gamesWonBySize[20] > 0 ? 1 : 0 },
+            { id: 'size_master_all', title: 'Мастер Размеров', description: 'Сыграйте на 5 разных размерах поля.', icon: 'fa-ruler-combined', points: 100, condition: (stats) => stats.playedSizes.size >= 5, progress: (stats) => Math.min(stats.playedSizes.size / 5, 1) },
+            { id: 'mode_explorer', title: 'Режимный исследователь', description: 'Попробуйте 5 разных режимов игры.', icon: 'fa-route', points: 100, condition: (stats) => stats.modesTried.size >= 5, progress: (stats) => Math.min(stats.modesTried.size / 5, 1) },
+            { id: 'mode_master', title: 'Повелитель Режимов', description: 'Попробуйте все доступные режимы игры.', icon: 'fa-dungeon', points: 250, condition: (stats) => stats.modesTried.size >= gameModes.length, progress: (stats) => Math.min(stats.modesTried.size / gameModes.length, 1) },
+            { id: 'win_classic', title: 'Классик', description: 'Выиграйте в режиме "Классический".', icon: 'fa-th', points: 20, condition: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_time', title: 'Спринтер', description: 'Выиграйте в режиме "На время".', icon: 'fa-stopwatch', points: 30, condition: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_moves', title: 'Тактик', description: 'Выиграйте в режиме "С ограничением ходов".', icon: 'fa-shoe-prints', points: 30, condition: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_reverse', title: 'Реверсер', description: 'Выиграйте в режиме "Обратный".', icon: 'fa-exchange-alt', points: 40, condition: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'collector_10', title: 'Коллекционер', description: 'Выиграйте 10 игр.', icon: 'fa-medal', points: 100, condition: (stats) => stats.totalGamesWon >= 10, progress: (stats) => Math.min(stats.totalGamesWon / 10, 1) },
+            { id: 'collector_50', title: 'Энтузиаст', description: 'Выиграйте 50 игр.', icon: 'fa-award', points: 250, condition: (stats) => stats.totalGamesWon >= 50, progress: (stats) => Math.min(stats.totalGamesWon / 50, 1) },
+            { id: 'mover_1k', title: 'Непоседа', description: 'Сделайте 1000 ходов.', icon: 'fa-walking', points: 50, condition: (stats) => stats.totalMoves >= 1000, progress: (stats) => Math.min(stats.totalMoves / 1000, 1) },
+            { id: 'mover_10k', title: 'Марафонец', description: 'Сделайте 10 000 ходов.', icon: 'fa-running', points: 150, condition: (stats) => stats.totalMoves >= 10000, progress: (stats) => Math.min(stats.totalMoves / 10000, 1) },
+            { id: 'score_1k', title: 'Накопитель', description: 'Наберите 1000 очков (без учета очков за достижения).', icon: 'fa-coins', points: 50, condition: (stats) => stats.totalScore >= 1000, progress: (stats) => Math.min(stats.totalScore / 1000, 1) },
+            { id: 'score_10k', title: 'Богач', description: 'Наберите 10 000 очков (без учета очков за достижения).', icon: 'fa-gem', points: 150, condition: (stats) => stats.totalScore >= 10000, progress: (stats) => Math.min(stats.totalScore / 10000, 1) },
+            { id: 'fast_solver_100', title: 'Быстрый решатель', description: 'Решите головоломку 4x4 менее чем за 100 ходов.', icon: 'fa-bolt', points: 75, condition: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[4] && stats.gameRecords.classic[4].bestMoves < 100, progress: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[4] ? Math.max(0, 1 - (stats.gameRecords.classic[4].bestMoves - 50) / 50) : 0 },
+            { id: 'shuffler_50', title: 'Хаос-менеджер', description: 'Перемешайте плитки 50 раз.', icon: 'fa-sync-alt', points: 50, condition: (stats) => stats.shuffles >= 50, progress: (stats) => Math.min(stats.shuffles / 50, 1) },
+            { id: 'explorer_50', title: 'Детектив', description: 'Найдите 50 чисел с помощью поиска.', icon: 'fa-search-plus', points: 60, condition: (stats) => stats.numbersFound >= 50, progress: (stats) => Math.min(stats.numbersFound / 50, 1) },
+            { id: 'autohighlight_user', title: 'Автопилот', description: 'Выиграйте игру, используя автоподсветку.', icon: 'fa-robot', points: 30, condition: (stats) => stats.winsWithAutohighlight > 0, progress: (stats) => stats.winsWithAutohighlight > 0 ? 1 : 0 },
+            { id: 'styler', title: 'Стилист', description: 'Измените размер плиток, их закругление и размер шрифта.', icon: 'fa-magic', points: 25, condition: (stats) => stats.styleChanges.size >= 3, progress: (stats) => Math.min(stats.styleChanges.size / 3, 1) },
+            { id: 'win_obstacle', title: 'Преодоление', description: 'Выиграйте в режиме "С препятствиями".', icon: 'fa-ban', points: 50, condition: (stats) => stats.gameRecords.obstacle && stats.gameRecords.obstacle[currentSize] && stats.gameRecords.obstacle[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.obstacle && stats.gameRecords.obstacle[currentSize] && stats.gameRecords.obstacle[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_memory', title: 'Феноменальная память', description: 'Выиграйте в режиме "С памятью".', icon: 'fa-brain', points: 60, condition: (stats) => stats.gameRecords.memory && stats.gameRecords.memory[currentSize] && stats.gameRecords.memory[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.memory && stats.gameRecords.memory[currentSize] && stats.gameRecords.memory[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_image', title: 'Художник-головоломщик', description: 'Выиграйте в режиме "С картинкой".', icon: 'fa-image', points: 80, condition: (stats) => stats.gameRecords.image && stats.gameRecords.image[currentSize] && stats.gameRecords.image[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.image && stats.gameRecords.image[currentSize] && stats.gameRecords.image[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_teleport', title: 'Мастер телепортации', description: 'Выиграйте в режиме "Телепорт".', icon: 'fa-random', points: 75, condition: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_vortex', title: 'Мастер вихря', description: 'Выиграйте в режиме "Вихрь".', icon: 'fa-wind', points: 80, condition: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_hidden_path', title: 'Проводник', description: 'Выиграйте в режиме "Скрытый путь".', icon: 'fa-eye-slash', points: 85, condition: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_darkness', title: 'Ночной странник', description: 'Выиграйте в режиме "Темнота".', icon: 'fa-moon', points: 90, condition: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0 ? 1 : 0 }
         ];
 
+        // Game Modes Data
         const gameModes = [
-            { id: 'classic', title: 'Классический', description: 'Стандартные пятнашки', icon: 'fa-th', active: true,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity })
-            },
-            { id: 'time', title: 'На время', description: 'Соберите головоломку как можно быстрее', icon: 'fa-stopwatch', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: size * size * 5 })
-            },
-            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false,
-              getLimits: (size) => ({ moves: size * size * 15, time: Infinity })
-            },
-            { id: 'reverse', title: 'Обратный', description: 'Начните с собранного состояния и соберите в обратном порядке', icon: 'fa-exchange-alt', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity })
-            },
-            { id: 'image', title: 'С картинкой', description: 'Вместо цифр - фрагменты изображения', icon: 'fa-image', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity })
-            },
-            { id: 'obstacle', title: 'С препятствиями', description: 'Некоторые плитки заблокированы на своих местах', icon: 'fa-ban', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity }),
-              getObstacleCount: (size) => Math.max(1, Math.floor(size * size * 0.05))
-            },
-            { id: 'teleport', title: 'Телепорт', description: 'Пустая ячейка телепортируется каждые несколько ходов', icon: 'fa-bolt', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity }),
-              teleportFrequency: (size) => Math.max(3, Math.floor(size * 1.5))
-            },
-            { id: 'vortex', title: 'Вихрь', description: 'Пустая плитка перемещается случайным образом после каждого хода', icon: 'fa-wind', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity })
-            },
-            { id: 'hidden_path', title: 'Скрытый путь', description: 'Видны только плитки вокруг пустой ячейки', icon: 'fa-eye-slash', active: false,
-              getLimits: (size) => ({ moves: Infinity, time: Infinity })
-            }
+            { id: 'classic', title: 'Классический', description: 'Стандартные пятнашки', icon: 'fa-th', active: true, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
+            { id: 'time', title: 'На время', description: 'Соберите головоломку как можно быстрее', icon: 'fa-stopwatch', active: false, getLimits: (size) => ({ moves: Infinity, time: size * size * 5 }) },
+            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false, getLimits: (size) => ({ moves: size * size * 15, time: Infinity }) },
+            { id: 'reverse', title: 'Обратный', description: 'Начните с собранного состояния и соберите в обратном порядке', icon: 'fa-exchange-alt', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
+            { id: 'image', title: 'С картинкой', description: 'Вместо цифр - фрагменты изображения', icon: 'fa-image', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
+            { id: 'obstacle', title: 'С препятствиями', description: 'Некоторые плитки заблокированы на своих местах', icon: 'fa-ban', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }), getObstacleCount: (size) => Math.max(1, Math.floor(size * size * 0.05)) },
+            { id: 'teleport', title: 'Телепорт', description: 'Пустая ячейка телепортируется каждые несколько ходов', icon: 'fa-bolt', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }), teleportFrequency: (size) => Math.max(3, Math.floor(size * 1.5)) },
+            { id: 'vortex', title: 'Вихрь', description: 'Пустая плитка перемещается случайным образом после каждого хода', icon: 'fa-wind', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
+            { id: 'hidden_path', title: 'Скрытый путь', description: 'Видны только плитки вокруг пустой ячейки', icon: 'fa-eye-slash', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
+            { id: 'darkness', title: 'Темнота', description: 'Большинство плиток скрыты, кроме текущей и соседних', icon: 'fa-moon', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) }
         ];
 
-        // ✨ ИЗМЕНЕНИЕ: Данные для вкладки "Архив"
-        const archiveVersions = [
-            { date: "22 июля 2025", label: "(Текущая версия)", url: null },
-            { date: "21 июля 2025", label: "", url: "archive/12.html" },
-            { date: "20 мая 2025", label: "", url: "archive/11.html" },
-            { date: "28 апреля 2025", label: "", url: "archive/10.html" },
-            { date: "11 апреля 2025", label: "", url: "archive/9.html" },
-            { date: "21 марта 2025", label: "", url: "archive/8.html" },
-            { date: "19 марта 2025", label: "", url: "archive/7.html" },
-            { date: "29 ноября 2024", label: "", url: "archive/6.html" },
-            { date: "27 ноября 2024", label: "", url: "archive/5.html" },
-            { date: "25 ноября 2024", label: "(Создание)", url: "archive/4.html" }
-        ];
-
+        // Game Statistics
         let gameStats = {};
         
-        // ✨ ИЗМЕНЕНИЕ: Функция для анимации карточек
-        function animateCards(tabId) {
-            const activeTab = document.getElementById(tabId);
-            if (!activeTab) return;
-
-            const cards = activeTab.querySelectorAll('.card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.classList.add('visible');
-                }, index * 80); // Задержка 80мс между карточками
-            });
-        }
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.getAttribute('data-tab');
-                
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                    // Скрываем все карточки перед переключением
-                    content.querySelectorAll('.card').forEach(card => card.classList.remove('visible'));
-                });
-                
-                const newActiveTab = document.getElementById(`${tabId}-tab`);
-                newActiveTab.classList.add('active');
-                
-                // Запускаем анимацию для новой активной вкладки
-                animateCards(`${tabId}-tab`);
-            });
-        });
-
         function initializeStats() {
              gameStats = {
-                currentMoves: 0, totalMoves: 0, totalScore: 0, achievementScore: 0, totalGamesWon: 0, shuffles: 0,
-                numbersFound: 0, winsWithAutohighlight: 0, playedSizes: new Set(), colorsChanged: new Set(),
-                styleChanges: new Set(), modesTried: new Set(['classic']), gamesWonBySize: {}, gameRecords: {} 
+                currentMoves: 0, totalMoves: 0, totalScore: 0, achievementScore: 0, totalGamesWon: 0, shuffles: 0, numbersFound: 0, winsWithAutohighlight: 0,
+                playedSizes: new Set(), colorsChanged: new Set(), styleChanges: new Set(), modesTried: new Set(['classic']), gamesWonBySize: {}, gameRecords: {} 
             };
-            
-            const maxSliderSize = 20; // Увеличено до 20
+            const maxSliderSize = parseInt(sizeSlider.max);
             gameModes.forEach(mode => {
                 gameStats.gameRecords[mode.id] = {};
                 for (let s = 2; s <= maxSliderSize; s++) {
-                    gameStats.gameRecords[mode.id][s] = {
-                        gamesPlayed: 0, bestTime: Infinity, worstTime: 0, bestMoves: Infinity, worstMoves: 0
-                    };
+                    gameStats.gameRecords[mode.id][s] = { gamesPlayed: 0, bestTime: Infinity, worstTime: 0, bestMoves: Infinity, worstMoves: 0 };
                 }
-            });
-        }
-
-        // ✨ ИЗМЕНЕНИЕ: Функция для генерации контента вкладок
-        function renderAllTabs() {
-            renderSettingsTab();
-            renderModesTab();
-            renderAchievementsTab();
-            renderStatsTab();
-            renderArchiveTab();
-        }
-
-        function renderSettingsTab() {
-            const grid = document.querySelector('#settings-tab .settings-grid');
-            grid.innerHTML = `
-                <div class="settings-card card">
-                    <h3><i class="fas fa-sliders-h"></i> Основные настройки</h3>
-                    <div class="control-row">
-                        <span class="control-label">Размер поля:</span>
-                        <input type="range" id="sizeSlider" min="2" max="20" value="4" step="1">
-                        <span class="range-value" id="sizeValue">4</span>
-                    </div>
-                    <button class="btn" id="applySize"><i class="fas fa-check"></i> Применить размер</button>
-                    <button class="btn" id="shuffleBtn"><i class="fas fa-random"></i> Перемешать</button>
-                </div>
-                <div class="settings-card card">
-                    <h3><i class="fas fa-palette"></i> Внешний вид</h3>
-                    <div class="control-row">
-                        <span class="control-label">Цвет плиток:</span>
-                        <input type="color" id="tileColor" value="#ffeaa7">
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Размер плиток:</span>
-                        <input type="range" id="tileSizeSlider" min="30" max="100" value="60" step="1">
-                        <span class="range-value" id="tileSizeValue">60px</span>
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Закругление:</span>
-                        <input type="range" id="tileRadiusSlider" min="0" max="50" value="10" step="1">
-                        <span class="range-value" id="tileRadiusValue">10px</span>
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Размер шрифта:</span>
-                        <input type="range" id="fontSizeSlider" min="12" max="48" value="24" step="1">
-                        <span class="range-value" id="fontSizeValue">24px</span>
-                    </div>
-                </div>
-                <div class="settings-card card">
-                    <h3><i class="fas fa-fill-drip"></i> Цвета</h3>
-                    <div class="control-row">
-                        <span class="control-label">Цвет фона:</span>
-                        <input type="color" id="bgColor" value="#f5f6fa">
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Цвет рамки:</span>
-                        <input type="color" id="borderColor" value="#6c5ce7">
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Цвет текста:</span>
-                        <input type="color" id="textColor" value="#2d3436">
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Цвет подсветки:</span>
-                        <input type="color" id="highlightColor" value="#74b9ff">
-                    </div>
-                    <div class="control-row">
-                        <span class="control-label">Цвет правильных:</span>
-                        <input type="color" id="correctColor" value="#55efc4">
-                    </div>
-                </div>
-                <div class="settings-card card">
-                    <h3><i class="fas fa-search"></i> Поиск и подсветка</h3>
-                    <div class="input-group">
-                        <input type="number" id="numberInput" min="1" placeholder="Введите число" class="form-input">
-                    </div>
-                    <button class="btn" id="findNumberBtn"><i class="fas fa-search"></i> Найти число</button>
-                    <button class="btn" id="autoHighlightBtn"><i class="fas fa-magic"></i> Автоподсветка</button>
-                </div>
-            `;
-            initSliders();
-            initSettingsListeners();
-        }
-
-        function renderModesTab() {
-            const grid = document.querySelector('#modes-tab .modes-grid');
-            grid.innerHTML = '';
-            gameModes.forEach(mode => {
-                const card = document.createElement('div');
-                card.className = `mode-card card ${mode.active ? 'active' : ''}`;
-                card.dataset.mode = mode.id;
-                
-                card.innerHTML = `
-                    <div class="mode-icon"><i class="fas ${mode.icon}"></i></div>
-                    <div class="mode-title">${mode.title}</div>
-                    <div class="mode-desc">${mode.description}</div>
-                `;
-
-                if (mode.id === 'image') {
-                    const inputGroup = document.createElement('div');
-                    inputGroup.className = 'input-group';
-                    inputGroup.style.marginTop = '10px';
-                    
-                    const imageInput = document.createElement('input');
-                    imageInput.type = 'file';
-                    imageInput.accept = 'image/*';
-                    imageInput.id = 'image-upload-input';
-                    imageInput.addEventListener('change', (e) => loadImageForMode(e.target.files[0]));
-
-                    const imageLabel = document.createElement('label');
-                    imageLabel.htmlFor = 'image-upload-input';
-                    imageLabel.className = 'btn btn-block';
-                    imageLabel.innerHTML = '<i class="fas fa-upload"></i> Выбрать файл';
-                    
-                    inputGroup.appendChild(imageInput);
-                    inputGroup.appendChild(imageLabel);
-                    card.appendChild(inputGroup);
-                }
-                
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('label[for="image-upload-input"]')) return;
-                    setActiveMode(mode.id);
-                });
-                grid.appendChild(card);
-            });
-        }
-
-        function renderAchievementsTab() {
-            const grid = document.querySelector('#achievements-tab .achievements-grid');
-            grid.innerHTML = '';
-            achievementsData.forEach(achievement => {
-                const isCompleted = completedAchievements.includes(achievement.id);
-                const progress = achievement.progress(gameStats);
-                
-                const card = document.createElement('div');
-                card.className = `achievement-card card ${isCompleted ? '' : 'locked'}`;
-                
-                card.innerHTML = `
-                    <div class="achievement-icon"><i class="fas ${achievement.icon}"></i></div>
-                    <div class="achievement-title">${achievement.title}</div>
-                    <div class="achievement-desc">${achievement.description}</div>
-                    <div class="achievement-progress"><div class="progress-bar" style="width: ${progress * 100}%"></div></div>
-                    <div class="achievement-points">+${achievement.points} очков</div>
-                    ${isCompleted ? '<div class="ribbon">Получено!</div>' : ''}
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderStatsTab() {
-            const grid = document.querySelector('#stats-tab .stats-grid');
-            grid.innerHTML = `
-                <div class="stats-card card">
-                    <i class="fas fa-gamepad stats-icon"></i>
-                    <div class="stats-value">${gameStats.totalGamesWon}</div>
-                    <div class="stats-label">Собрано игр</div>
-                </div>
-                <div class="stats-card card">
-                    <i class="fas fa-arrows-alt-h stats-icon"></i>
-                    <div class="stats-value">${gameStats.totalMoves}</div>
-                    <div class="stats-label">Передвинуто плиток</div>
-                </div>
-                <div class="stats-card card">
-                    <i class="fas fa-coins stats-icon"></i>
-                    <div class="stats-value">${gameStats.totalScore}</div>
-                    <div class="stats-label">Очков получено</div>
-                </div>
-                 <div class="stats-card card">
-                    <i class="fas fa-trophy stats-icon"></i>
-                    <div class="stats-value">${gameStats.achievementScore}</div>
-                    <div class="stats-label">Очки за достижения</div>
-                </div>
-                <div class="stats-list-card card">
-                    <h3>Статистика по режимам и размерам:</h3>
-                    <ul class="stats-list" id="statsModeSizeList"></ul>
-                </div>
-            `;
-            
-            const modeSizeList = document.getElementById('statsModeSizeList');
-            modeSizeList.innerHTML = '';
-            gameModes.forEach(mode => {
-                const modeLi = document.createElement('li');
-                modeLi.innerHTML = `<span class="stats-list-label">${mode.title}</span><span class="stats-list-value"></span>`;
-                modeSizeList.appendChild(modeLi);
-
-                const subList = document.createElement('ul');
-                subList.className = 'stats-sub-list';
-                modeLi.appendChild(subList);
-
-                const sortedSizes = Object.keys(gameStats.gameRecords[mode.id]).sort((a,b) => parseInt(a) - parseInt(b));
-                
-                let modeHasData = false;
-                sortedSizes.forEach(size => {
-                    const record = gameStats.gameRecords[mode.id][size];
-                    if (record.gamesPlayed > 0) {
-                        modeHasData = true;
-                        const sizeLi = document.createElement('li');
-                        let statsHtml = `<span>Поле ${size}x${size}:</span><span>Игр: ${record.gamesPlayed}`;
-                        if (record.bestMoves !== Infinity) statsHtml += `, Ходы: ${record.bestMoves}`;
-                        if (record.bestTime !== Infinity) {
-                            const bestMin = Math.floor(record.bestTime / 60);
-                            const bestSec = record.bestTime % 60;
-                            statsHtml += `, Время: ${bestMin.toString().padStart(2, '0')}:${bestSec.toString().padStart(2, '0')}`;
-                        }
-                        statsHtml += `</span>`;
-                        sizeLi.innerHTML = statsHtml;
-                        subList.appendChild(sizeLi);
-                    }
-                });
-
-                if (!modeHasData) {
-                    const noDataLi = document.createElement('li');
-                    noDataLi.textContent = 'Нет данных для этого режима.';
-                    subList.appendChild(noDataLi);
-                }
-            });
-        }
-
-        function renderArchiveTab() {
-            const grid = document.querySelector('#archive-tab .archive-grid');
-            grid.innerHTML = '';
-            archiveVersions.forEach(version => {
-                let card;
-                if (version.url) {
-                    card = document.createElement('a');
-                    card.href = version.url;
-                } else {
-                    card = document.createElement('div');
-                    card.classList.add('current-version');
-                }
-                card.className += ' archive-card card';
-                card.innerHTML = `
-                    <div class="version-date">${version.date}</div>
-                    <div class="version-label">${version.label}</div>
-                `;
-                grid.appendChild(card);
             });
         }
 
         function initSliders() {
-            const sizeSlider = document.getElementById('sizeSlider');
-            const sizeValue = document.getElementById('sizeValue');
-            const tileSizeSlider = document.getElementById('tileSizeSlider');
-            const tileSizeValue = document.getElementById('tileSizeValue');
-            const tileRadiusSlider = document.getElementById('tileRadiusSlider');
-            const tileRadiusValue = document.getElementById('tileRadiusValue');
-            const fontSizeSlider = document.getElementById('fontSizeSlider');
-            const fontSizeValue = document.getElementById('fontSizeValue');
-
             sizeValue.textContent = sizeSlider.value;
             tileSizeValue.textContent = tileSizeSlider.value + 'px';
             tileRadiusValue.textContent = tileRadiusSlider.value + 'px';
             fontSizeValue.textContent = fontSizeSlider.value + 'px';
-            
-            sizeSlider.addEventListener('input', () => sizeValue.textContent = sizeSlider.value);
-            tileSizeSlider.addEventListener('input', () => {
-                tileSize = parseInt(tileSizeSlider.value);
-                tileSizeValue.textContent = tileSize + 'px';
-                applyVisualUpdates();
-                gameStats.styleChanges.add('tileSize');
-                saveStats();
-                checkAchievements();
-            });
-            tileRadiusSlider.addEventListener('input', () => {
-                tileRadius = parseInt(tileRadiusSlider.value);
-                tileRadiusValue.textContent = tileRadius + 'px';
-                applyVisualUpdates();
-                gameStats.styleChanges.add('tileRadius');
-                saveStats();
-                checkAchievements();
-            });
-            fontSizeSlider.addEventListener('input', () => {
-                fontSize = parseInt(fontSizeSlider.value);
-                fontSizeValue.textContent = fontSize + 'px';
-                applyVisualUpdates();
-                gameStats.styleChanges.add('fontSize');
-                saveStats();
-                checkAchievements();
-            });
-        }
-
-        function initSettingsListeners() {
-            const tileColorPicker = document.getElementById('tileColor');
-            const numberInput = document.getElementById('numberInput');
-            const findNumberBtn = document.getElementById('findNumberBtn');
-            const sizeSlider = document.getElementById('sizeSlider');
-            const applySizeBtn = document.getElementById('applySize');
-            const shuffleBtn = document.getElementById('shuffleBtn');
-            const autoHighlightBtn = document.getElementById('autoHighlightBtn');
-            const bgColorPicker = document.getElementById('bgColor');
-            const borderColorPicker = document.getElementById('borderColor');
-            const textColorPicker = document.getElementById('textColor');
-            const highlightColorPicker = document.getElementById('highlightColor');
-            const correctColorPicker = document.getElementById('correctColor');
-
-            tileColorPicker.addEventListener('change', () => updateColors('tile'));
-            bgColorPicker.addEventListener('change', () => updateColors('bg'));
-            borderColorPicker.addEventListener('change', () => updateColors('border'));
-            textColorPicker.addEventListener('change', () => updateColors('text'));
-            highlightColorPicker.addEventListener('change', () => {
-                if (highlightedTile) {
-                    highlightedTile.style.backgroundColor = highlightColorPicker.value;
-                    highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
-                }
-                updateColors('highlight');
-            });
-            correctColorPicker.addEventListener('change', () => {
-                highlightCorrectTiles(currentSize);
-                updateColors('correct');
-            });
-            findNumberBtn.addEventListener('click', () => {
-                const number = parseInt(numberInput.value);
-                if (!isNaN(number)) highlightNumber(number);
-            });
-            numberInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') findNumberBtn.click();
-            });
-            applySizeBtn.addEventListener('click', () => {
-                const size = parseInt(sizeSlider.value);
-                if (size >= 2 && size <= 20) {
-                    currentSize = size;
-                    createGame(size);
-                    shuffleTiles();
-                }
-            });
-            shuffleBtn.addEventListener('click', shuffleTiles);
-            autoHighlightBtn.addEventListener('click', toggleAutoHighlight);
+            sizeSlider.addEventListener('input', () => { sizeValue.textContent = sizeSlider.value; });
+            tileSizeSlider.addEventListener('input', () => { tileSize = parseInt(tileSizeSlider.value); tileSizeValue.textContent = tileSize + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('tileSize'); saveStats(); checkAchievements(); });
+            tileRadiusSlider.addEventListener('input', () => { tileRadius = parseInt(tileRadiusSlider.value); tileRadiusValue.textContent = tileRadius + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('tileRadius'); saveStats(); checkAchievements(); });
+            fontSizeSlider.addEventListener('input', () => { fontSize = parseInt(fontSizeSlider.value); fontSizeValue.textContent = fontSize + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('fontSize'); saveStats(); checkAchievements(); });
         }
         
         function applyVisualUpdates() {
             gameField.style.width = `${currentSize * (tileSize + tileGap)}px`;
             gameField.style.height = `${currentSize * (tileSize + tileGap)}px`;
-            
             tiles.forEach(tile => {
                 tile.style.width = tileSize + 'px';
                 tile.style.height = tileSize + 'px';
                 tile.style.borderRadius = tileRadius + 'px';
                 tile.style.fontSize = fontSize + 'px';
             });
-            
-            renderTiles(currentSize, false);
+            renderTiles(currentSize, 'move');
         }
 
         function startTimer() {
@@ -1704,7 +1266,6 @@
             const limits = currentMode.getLimits(currentSize);
             timeLeft = limits.time; 
             updateScore(); 
-
             timerInterval = setInterval(() => {
                 timeLeft--; 
                 updateScore();
@@ -1720,13 +1281,17 @@
             timerInterval = null;
             stopAutoHighlight(); 
             clearTimeout(memoryRevealTimeout); 
-            document.querySelectorAll('.tile.hidden-number.revealed').forEach(tile => tile.classList.remove('revealed'));
-            document.querySelectorAll('.tile.hidden-path-hidden').forEach(tile => tile.classList.remove('hidden-path-hidden'));
+            document.querySelectorAll('.tile.hidden-number.revealed').forEach(tile => { tile.classList.remove('revealed'); });
+            document.querySelectorAll('.tile.darkness-hidden, .tile.hidden-path-hidden').forEach(tile => {
+                tile.classList.remove('darkness-hidden', 'hidden-path-hidden');
+                tile.style.backgroundColor = tileColorPicker.value;
+                tile.style.color = textColorPicker.value;
+            });
+            darknessRevealedTiles.clear();
         }
 
         function createGame(size) {
             stopGameMechanisms(); 
-
             gameField.innerHTML = '';
             tiles = [];
             emptyTileIndex = size * size - 1;
@@ -1734,61 +1299,47 @@
             currentScore = 0;
             gameStats.currentMoves = 0;
             isTimeModeGameStarted = false;
-
             timeLeft = 0;
             movesLeft = 0;
             obstacleTiles.clear();
             teleportMoveCounter = 0;
-            
             const currentMode = gameModes.find(mode => mode.id === gameMode);
             const limits = currentMode.getLimits(currentSize);
-
-            if (gameMode === 'moves') movesLeft = limits.moves;
-            else if (gameMode === 'time') {
-                timeLeft = limits.time;
-                hintMessage.classList.add('active');
-            } else {
-                hintMessage.classList.remove('active');
-            }
-            
-            targetOrder = (gameMode === 'reverse') 
-                ? Array.from({length: size * size - 1}, (_, i) => size * size - 1 - i)
-                : Array.from({length: size * size - 1}, (_, i) => i + 1);
-
+            if (gameMode === 'moves') { movesLeft = limits.moves; }
+            else if (gameMode === 'time') { timeLeft = limits.time; hintMessage.classList.add('active'); }
+            else { hintMessage.classList.remove('active'); }
+            if (gameMode === 'reverse') { targetOrder = Array.from({length: size * size - 1}, (_, i) => size * size - 1 - i); }
+            else { targetOrder = Array.from({length: size * size - 1}, (_, i) => i + 1); }
             gameStats.playedSizes.add(size);
             saveStats();
             checkAchievements();
-            
+            gameField.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            gameField.style.gridTemplateRows = `repeat(${size}, 1fr)`;
             gameField.style.width = `${size * (tileSize + tileGap)}px`;
             gameField.style.height = `${size * (tileSize + tileGap)}px`;
             gameField.style.gap = tileGap + 'px';
-
             for (let i = 1; i <= size * size - 1; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.id = `tile-${i}`;
-                
                 const tileInner = document.createElement('div');
                 tileInner.className = 'tile-inner';
                 tileInner.textContent = i;
                 tile.appendChild(tileInner);
-                
                 tile.style.width = tileSize + 'px';
                 tile.style.height = tileSize + 'px';
                 tile.style.borderRadius = tileRadius + 'px';
                 tile.style.fontSize = fontSize + 'px';
-                tile.style.color = document.getElementById('textColor')?.value || '#2d3436';
+                tile.style.color = textColorPicker.value;
                 tile.style.opacity = 0;
                 tiles.push(tile);
                 gameField.appendChild(tile);
             }
-
             const emptyTile = document.createElement('div');
             emptyTile.className = 'empty-tile';
             emptyTile.id = 'empty-tile';
             tiles.push(emptyTile);
             gameField.appendChild(emptyTile);
-
             updateScore();
         }
 
@@ -1813,25 +1364,17 @@
         }
 
         function highlightNumber(number) {
-            const highlightColorPicker = document.getElementById('highlightColor');
-            const tileColorPicker = document.getElementById('tileColor');
-            const textColorPicker = document.getElementById('textColor');
-
             if (highlightedTile) {
                 highlightedTile.classList.remove('highlight');
                 highlightedTile.style.backgroundColor = tileColorPicker.value;
                 highlightedTile.style.color = textColorPicker.value;
             }
-            
             if (!number || number < 1 || number > currentSize * currentSize - 1) return;
-            
-            highlightedTile = tiles.find(tile => !tile.classList.contains('empty-tile') && tile.querySelector('.tile-inner')?.textContent == number);
-            
+            highlightedTile = Array.from(document.querySelectorAll('.tile')).find(tile => !tile.classList.contains('empty-tile') && tile.querySelector('.tile-inner')?.textContent == number);
             if (highlightedTile) {
                 highlightedTile.classList.add('highlight');
                 highlightedTile.style.backgroundColor = highlightColorPicker.value;
                 highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
-                
                 gameStats.numbersFound++;
                 saveStats();
                 checkAchievements();
@@ -1848,51 +1391,47 @@
 
         function checkTilePositions() {
             const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-
             for (let num = 0; num < checkTargetOrder.length; num++) {
                 const expectedValue = checkTargetOrder[num]; 
-                const tileAtCurrentIndexValue = tiles[num].querySelector('.tile-inner')?.textContent;
-                if (parseInt(tileAtCurrentIndexValue) !== expectedValue) {
-                     currentTargetNumber = expectedValue;
-                     return currentTargetNumber;
+                const currentTileAtPosition = tiles.find(t => t.querySelector('.tile-inner')?.textContent == expectedValue);
+                if (currentTileAtPosition) {
+                    const currentTileIndex = tiles.indexOf(currentTileAtPosition);
+                    if (currentTileIndex !== num) { 
+                        currentTargetNumber = expectedValue; 
+                        return currentTargetNumber;
+                    }
+                } else {
+                    const tileAtCurrentIndexValue = tiles[num].querySelector('.tile-inner')?.textContent;
+                    if (parseInt(tileAtCurrentIndexValue) !== expectedValue) {
+                         currentTargetNumber = expectedValue;
+                         return currentTargetNumber;
+                    }
                 }
             }
-            
             stopAutoHighlight();
-            if (checkWin(currentSize)) {
-                 endGame(true, 'Победа через автоподсветку!');
-            }
+            if (checkWin(currentSize)) { endGame(true, 'Победа через автоподсветку!'); }
             return null;
         }
 
         function autoHighlightNext() {
-            const autoHighlightBtn = document.getElementById('autoHighlightBtn');
             if (isAutoHighlighting) return;
-            
             isAutoHighlighting = true;
             autoHighlightBtn.classList.add('active');
             autoHighlightBtn.innerHTML = '<i class="fas fa-stop"></i> Остановить';
             currentTargetNumber = 1;
-            
             const firstNumber = checkTilePositions();
-            if (firstNumber) highlightNumber(firstNumber);
-            
+            if (firstNumber) { highlightNumber(firstNumber); }
             autoHighlightInterval = setInterval(() => {
                 const nextNumber = checkTilePositions();
-                if (nextNumber) highlightNumber(nextNumber);
+                if (nextNumber) { highlightNumber(nextNumber); }
             }, 1000);
         }
 
         function stopAutoHighlight() {
-            const autoHighlightBtn = document.getElementById('autoHighlightBtn');
-            const tileColorPicker = document.getElementById('tileColor');
-            const textColorPicker = document.getElementById('textColor');
-
             isAutoHighlighting = false;
             clearInterval(autoHighlightInterval);
             autoHighlightBtn.classList.remove('active');
             autoHighlightBtn.innerHTML = '<i class="fas fa-magic"></i> Автоподсветка';
-            
             if (highlightedTile) {
                 highlightedTile.classList.remove('highlight');
                 highlightedTile.style.backgroundColor = tileColorPicker.value;
@@ -1902,19 +1441,16 @@
         }
 
         function toggleAutoHighlight() {
-            if (isAutoHighlighting) stopAutoHighlight();
-            else autoHighlightNext();
+            if (isAutoHighlighting) { stopAutoHighlight(); } else { autoHighlightNext(); }
         }
 
-        function shuffleTiles() {
+        function shuffleTiles(isInitialShuffle = false) {
             stopGameMechanisms();
-            
             gameStats.shuffles++;
             saveStats();
             checkAchievements();
-            
+            const numbers = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
             let tempTiles = [...tiles.filter(t => !t.classList.contains('empty-tile'))];
-            
             let solvable = false;
             while (!solvable) {
                 for (let i = tempTiles.length - 1; i > 0; i--) {
@@ -1922,24 +1458,24 @@
                     [tempTiles[i], tempTiles[j]] = [tempTiles[j], tempTiles[i]];
                 }
                 let valuesForSolvabilityCheck = tempTiles.map(t => parseInt(t.querySelector('.tile-inner')?.textContent));
-                solvable = isSolvable(valuesForSolvabilityCheck, currentSize, currentSize * currentSize); 
+                valuesForSolvabilityCheck.push(currentSize * currentSize); 
+                solvable = isSolvable(valuesForSolvabilityCheck, currentSize, currentSize * currentSize - 1); 
             }
-
             const emptyTileElement = tiles.find(t => t.classList.contains('empty-tile'));
             tiles = [...tempTiles, emptyTileElement];
             emptyTileIndex = tiles.length - 1; 
-
             applyModeSpecificStylesAndLogic();
-            const useComplexAnimation = currentSize <= 10;
-            renderTiles(currentSize, useComplexAnimation);
+
+            if (isInitialShuffle) {
+                renderTiles(currentSize, 'initial');
+            } else {
+                renderTiles(currentSize, 'shuffle');
+            }
         }
 
         function applyModeSpecificStylesAndLogic() {
-            const tileColorPicker = document.getElementById('tileColor');
-            const textColorPicker = document.getElementById('textColor');
-
             tiles.forEach(tile => {
-                tile.classList.remove('obstacle-tile', 'hidden-number', 'revealed', 'hidden-path-hidden');
+                tile.classList.remove('obstacle-tile', 'hidden-number', 'revealed', 'darkness-hidden', 'hidden-path-hidden');
                 tile.style.backgroundImage = '';
                 tile.style.backgroundSize = '';
                 tile.style.backgroundPosition = '';
@@ -1952,14 +1488,13 @@
                 tile.style.pointerEvents = 'auto';
             });
             obstacleTiles.clear();
+            darknessRevealedTiles.clear();
             teleportMoveCounter = 0;
-
             if (gameMode === 'obstacle') {
                 const currentMode = gameModes.find(mode => mode.id === gameMode);
                 const count = currentMode.getObstacleCount(currentSize);
                 let obstaclesAdded = 0;
                 const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-
                 for (let i = 0; i < tiles.length - 1 && obstaclesAdded < count; i++) {
                     const tile = tiles[i];
                     const tileValue = parseInt(tile.querySelector('.tile-inner')?.textContent);
@@ -1971,46 +1506,43 @@
                     }
                 }
             }
-
             if (gameMode === 'memory') {
-                tiles.forEach(tile => {
-                    if (!tile.classList.contains('empty-tile')) tile.classList.add('hidden-number');
-                });
+                tiles.forEach(tile => { if (!tile.classList.contains('empty-tile')) { tile.classList.add('hidden-number'); } });
                 const currentMode = gameModes.find(mode => mode.id === gameMode);
                 setTimeout(() => {
-                    tiles.forEach(tile => {
-                        if (!tile.classList.contains('empty-tile')) tile.classList.add('revealed');
-                    });
+                    tiles.forEach(tile => { if (!tile.classList.contains('empty-tile')) { tile.classList.add('revealed'); } });
                     memoryRevealTimeout = setTimeout(() => {
-                        tiles.forEach(tile => {
-                            if (!tile.classList.contains('empty-tile')) tile.classList.remove('revealed');
-                        });
-                    }, currentMode.revealTime || 1500);
+                        tiles.forEach(tile => { if (!tile.classList.contains('empty-tile')) { tile.classList.remove('revealed'); } });
+                    }, currentMode.revealTime);
                 }, 500); 
             }
-
-            if (gameMode === 'image' && imageModeData.image) applyImageToTiles();
-            if (gameMode === 'hidden_path') updateHiddenPathTiles(emptyTileIndex);
+            if (gameMode === 'image' && imageModeData.image) { applyImageToTiles(); }
+            if (gameMode === 'darkness') {
+                tiles.forEach(tile => { if (!tile.classList.contains('empty-tile')) { tile.classList.add('darkness-hidden'); } });
+                revealDarknessTiles(emptyTileIndex);
+            }
+            if (gameMode === 'hidden_path') {
+                tiles.forEach(tile => { if (!tile.classList.contains('empty-tile')) { tile.classList.add('hidden-path-hidden'); } });
+                updateHiddenPathTiles(emptyTileIndex);
+            }
         }
-
 
         function isSolvable(arr, size, emptyTileVal) {
             let inversions = 0;
             const puzzleArray = arr.filter(n => !isNaN(n) && n !== emptyTileVal);
-            
             for (let i = 0; i < puzzleArray.length - 1; i++) {
                 for (let j = i + 1; j < puzzleArray.length; j++) {
-                    if (puzzleArray[i] > puzzleArray[j]) inversions++;
+                    if (puzzleArray[i] > puzzleArray[j]) { inversions++; }
                 }
             }
-
-            if (size % 2 === 1) return inversions % 2 === 0;
-            
-            const emptyTileCurrentPos = arr.indexOf(emptyTileVal);
+            const emptyTileCurrentPos = tiles.findIndex(t => t.classList.contains('empty-tile'));
             const emptyRowFromBottom = size - Math.floor(emptyTileCurrentPos / size); 
-            return (emptyRowFromBottom % 2 === 1) ? (inversions % 2 === 0) : (inversions % 2 === 1);
+            if (size % 2 === 1) { return inversions % 2 === 0; }
+            else { 
+                if (emptyRowFromBottom % 2 === 1) { return inversions % 2 === 0; }
+                else { return inversions % 2 === 1; }
+            }
         }
-
 
         function isValidMove(fromIndex, toIndex, size) {
             const rowDiff = Math.abs(Math.floor(fromIndex / size) - Math.floor(toIndex / size));
@@ -2018,70 +1550,84 @@
             return rowDiff + colDiff === 1;
         }
 
+        function checkCompletedLines(size) {
+            let completedLines = 0;
+            const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+            for (let row = 0; row < size; row++) {
+                let isRowComplete = true;
+                for (let col = 0; col < size; col++) {
+                    const index = row * size + col;
+                    if (index === emptyTileIndex) { isRowComplete = false; break; }
+                    const expectedNumber = checkTargetOrder[index];
+                    const tileContent = tiles[index].querySelector('.tile-inner')?.textContent;
+                    const tileValue = gameMode === 'image' ? parseInt(tiles[index].id.replace('tile-', '')) : parseInt(tileContent);
+                    if (tileValue !== expectedNumber) { isRowComplete = false; break; }
+                }
+                if (isRowComplete) completedLines++;
+            }
+            for (let col = 0; col < size; col++) {
+                let isColComplete = true;
+                for (let row = 0; row < size; row++) {
+                    const index = row * size + col;
+                    if (index === emptyTileIndex) { isColComplete = false; break; }
+                    const expectedNumber = checkTargetOrder[index];
+                    const tileContent = tiles[index].querySelector('.tile-inner')?.textContent;
+                    const tileValue = gameMode === 'image' ? parseInt(tiles[index].id.replace('tile-', '')) : parseInt(tileContent);
+                    if (tileValue !== expectedNumber) { isColComplete = false; break; }
+                }
+                if (isColComplete) completedLines++;
+            }
+            return completedLines;
+        }
+
         async function moveTile(tileIndex, size) {
-            if (tileIndex === emptyTileIndex || (gameMode === 'obstacle' && obstacleTiles.has(tiles[tileIndex].id))) return;
-            
+            if (tileIndex === emptyTileIndex) return;
+            if (gameMode === 'obstacle' && obstacleTiles.has(tiles[tileIndex].id)) { return; }
             if (isValidMove(tileIndex, emptyTileIndex, size)) {
                 if (gameMode === 'time' && !isTimeModeGameStarted) {
                     isTimeModeGameStarted = true;
                     hintMessage.classList.remove('active');
                     startTimer();
                 }
-
                 [tiles[emptyTileIndex], tiles[tileIndex]] = [tiles[tileIndex], tiles[emptyTileIndex]];
-                const oldEmptyIndex = emptyTileIndex;
                 emptyTileIndex = tileIndex;
-                
-                if (gameMode === 'teleport') await applyTeleport();
-                else if (gameMode === 'vortex') await applyVortex();
-                
-                if (gameMode === 'hidden_path') updateHiddenPathTiles(emptyTileIndex);
-
-                renderTiles(size);
-                
+                if (gameMode === 'teleport') { await applyTeleport(); }
+                else if (gameMode === 'vortex') { await applyVortex(); }
+                renderTiles(size, 'move');
                 gameStats.currentMoves++;
                 gameStats.totalMoves++;
                 addScore(1);
-
                 if (gameMode === 'moves') {
                     movesLeft--;
-                    if (movesLeft <= 0 && !checkWin(size)) {
-                        endGame(false, 'Ходы закончились!'); 
-                        return; 
-                    }
+                    if (movesLeft <= 0 && !checkWin(size)) { endGame(false, 'Ходы закончились!'); return; }
                 }
-
                 if (gameMode === 'memory') {
                     const currentMode = gameModes.find(mode => mode.id === gameMode);
                     const movedTile = tiles[tileIndex];
                     movedTile.classList.add('revealed');
                     clearTimeout(memoryRevealTimeout); 
-                    memoryRevealTimeout = setTimeout(() => movedTile.classList.remove('revealed'), currentMode.revealTime || 1500);
+                    memoryRevealTimeout = setTimeout(() => { movedTile.classList.remove('revealed'); }, currentMode.revealTime);
                 }
-
+                if (gameMode === 'darkness') { revealDarknessTiles(emptyTileIndex); }
+                if (gameMode === 'hidden_path') { updateHiddenPathTiles(emptyTileIndex); }
                 saveStats();
                 checkAchievements();
-                
+                const completedLines = checkCompletedLines(size);
+                if (completedLines > 0) { addScore(completedLines * 10); }
                 const movedTile = tiles[tileIndex];
                 const tileContent = movedTile.querySelector('.tile-inner')?.textContent;
                 const expectedForHighlight = (gameMode === 'reverse') ? targetOrder[tileIndex] : (tileIndex + 1);
-
                 if (tileContent && parseInt(tileContent) === expectedForHighlight) {
                     movedTile.classList.add('correct-position');
-                    setTimeout(() => movedTile.classList.remove('correct-position'), 1000);
+                    setTimeout(() => { movedTile.classList.remove('correct-position'); }, 1000);
                 }
-                
                 highlightCorrectTiles(size); 
                 updateScore(); 
-
                 if (isAutoHighlighting) {
                     const nextNumber = checkTilePositions();
-                    if (nextNumber) highlightNumber(nextNumber);
+                    if (nextNumber) { highlightNumber(nextNumber); }
                 }
-
-                if (checkWin(size)) {
-                    endGame(true, `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`);
-                }
+                if (checkWin(size)) { endGame(true, `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`); }
             }
         }
 
@@ -2089,12 +1635,10 @@
             teleportMoveCounter++;
             const currentMode = gameModes.find(mode => mode.id === 'teleport');
             const frequency = currentMode.teleportFrequency(currentSize);
-
             if (teleportMoveCounter >= frequency) {
                 teleportMoveCounter = 0;
                 const oldEmptyIndex = emptyTileIndex;
                 const availableSpots = tiles.map((tile, index) => index).filter(index => index !== oldEmptyIndex && !tiles[index].classList.contains('obstacle-tile'));
-
                 if (availableSpots.length > 0) {
                     const newEmptyIndex = availableSpots[Math.floor(Math.random() * availableSpots.length)];
                     [tiles[oldEmptyIndex], tiles[newEmptyIndex]] = [tiles[newEmptyIndex], tiles[oldEmptyIndex]];
@@ -2108,94 +1652,107 @@
         async function applyVortex() {
             const emptyRow = Math.floor(emptyTileIndex / currentSize);
             const emptyCol = emptyTileIndex % currentSize;
-            
             const possibleMoves = [];
             if (emptyRow > 0) possibleMoves.push(emptyTileIndex - currentSize);
             if (emptyRow < currentSize - 1) possibleMoves.push(emptyTileIndex + currentSize);
             if (emptyCol > 0) possibleMoves.push(emptyTileIndex - 1);
             if (emptyCol < currentSize - 1) possibleMoves.push(emptyTileIndex + 1);
-
-            const validMoves = possibleMoves.filter(index => !tiles[index].classList.contains('obstacle-tile'));
-            if (validMoves.length > 0) {
-                const randomIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
-                [tiles[emptyTileIndex], tiles[randomIndex]] = [tiles[randomIndex], tiles[emptyTileIndex]];
-                emptyTileIndex = randomIndex;
-                renderTiles(currentSize);
-                await new Promise(resolve => setTimeout(resolve, 150));
+            if (possibleMoves.length > 0) {
+                const validMoves = possibleMoves.filter(index => !tiles[index].classList.contains('obstacle-tile'));
+                if (validMoves.length > 0) {
+                    const randomIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    [tiles[emptyTileIndex], tiles[randomIndex]] = [tiles[randomIndex], tiles[emptyTileIndex]];
+                    emptyTileIndex = randomIndex;
+                    renderTiles(currentSize);
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                }
             }
+        }
+
+        function revealDarknessTiles(centerIndex) {
+            const centerRow = Math.floor(centerIndex / currentSize);
+            const centerCol = centerIndex % currentSize;
+            const offsets = [ [-1, -1], [-1, 0], [-1, 1], [0, -1],  [0, 0], [0, 1], [1, -1],  [1, 0], [1, 1] ];
+            const newlyRevealedIndexes = new Set();
+            for (const [dr, dc] of offsets) {
+                const checkRow = centerRow + dr;
+                const checkCol = centerCol + dc;
+                if (checkRow >= 0 && checkRow < currentSize && checkCol >= 0 && checkCol < currentSize) {
+                    newlyRevealedIndexes.add(checkRow * currentSize + checkCol);
+                }
+            }
+            tiles.forEach((tile, index) => {
+                 if (!tile.classList.contains('empty-tile')) {
+                    if(newlyRevealedIndexes.has(index)) { tile.classList.remove('darkness-hidden'); }
+                    else { tile.classList.add('darkness-hidden'); }
+                 }
+            });
         }
 
         function updateHiddenPathTiles(emptyIndex) {
             const emptyRow = Math.floor(emptyIndex / currentSize);
             const emptyCol = emptyIndex % currentSize;
-
-            const adjacentIndexes = new Set();
-            const adjacentOffsets = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-
+            const adjacentOffsets = [ [-1, 0], [1, 0], [0, -1], [0, 1] ];
+            const visibleIndexes = new Set();
             for (const [dr, dc] of adjacentOffsets) {
                 const checkRow = emptyRow + dr;
                 const checkCol = emptyCol + dc;
-
                 if (checkRow >= 0 && checkRow < currentSize && checkCol >= 0 && checkCol < currentSize) {
-                    adjacentIndexes.add(checkRow * currentSize + checkCol);
+                    visibleIndexes.add(checkRow * currentSize + checkCol);
                 }
             }
-
             tiles.forEach((tile, index) => {
-                if (!tile.classList.contains('empty-tile')) {
-                    if (adjacentIndexes.has(index)) tile.classList.remove('hidden-path-hidden');
-                    else tile.classList.add('hidden-path-hidden');
+                if(!tile.classList.contains('empty-tile')) {
+                    if (visibleIndexes.has(index)) { tile.classList.remove('hidden-path-hidden'); }
+                    else { tile.classList.add('hidden-path-hidden'); }
                 }
             });
         }
 
         function checkWin(size) {
-            const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: size * size - 1}, (_, i) => i + 1);
+            const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
             for (let i = 0; i < size * size - 1; i++) {
                 const tileContent = tiles[i].querySelector('.tile-inner')?.textContent;
                 const tileValue = gameMode === 'image' ? parseInt(tiles[i].id.replace('tile-', '')) : parseInt(tileContent);
-                if (tileValue !== checkTargetOrder[i]) return false;
+                if (tileValue !== checkTargetOrder[i]) { return false; }
             }
             return true;
         }
 
         function endGame(win, message) {
             stopGameMechanisms(); 
-            if (win) showWinAnimation(); 
-            else showMessageModal('Игра окончена!', message + '\nПопробуйте ещё раз!', () => shuffleTiles());
+            if (win) {
+                vibrationManager.win();
+                showWinAnimation(); 
+            } else {
+                vibrationManager.error();
+                showMessageModal('Игра окончена!', message + '\nПопробуйте ещё раз!', () => { shuffleTiles(); });
+            }
         }
 
         function showWinAnimation() {
             gameStats.totalGamesWon++;
             gameStats.totalScore += currentScore;
-            
-            if (!gameStats.gamesWonBySize[currentSize]) gameStats.gamesWonBySize[currentSize] = 0;
+            if (!gameStats.gamesWonBySize[currentSize]) { gameStats.gamesWonBySize[currentSize] = 0; }
             gameStats.gamesWonBySize[currentSize]++;
-            
             const currentRecord = gameStats.gameRecords[gameMode][currentSize];
             currentRecord.gamesPlayed++;
-            
             if (gameMode === 'time') {
                 const timeTaken = gameModes.find(mode => mode.id === gameMode).getLimits(currentSize).time - timeLeft;
                 if (timeTaken < currentRecord.bestTime) currentRecord.bestTime = timeTaken;
-                if (timeTaken > currentRecord.worstTime) currentRecord.worstTime = timeTaken;
+                if (currentRecord.worstTime === 0 || timeTaken > currentRecord.worstTime) currentRecord.worstTime = timeTaken;
             } else { 
                 const movesTaken = gameStats.currentMoves;
                 if (movesTaken < currentRecord.bestMoves) currentRecord.bestMoves = movesTaken;
-                if (movesTaken > currentRecord.worstMoves) currentRecord.worstMoves = movesTaken;
+                if (currentRecord.worstMoves === 0 || movesTaken > currentRecord.worstMoves) currentRecord.worstMoves = movesTaken;
             }
-
-            if (isAutoHighlighting) gameStats.winsWithAutohighlight++;
-            
+            if (isAutoHighlighting) { gameStats.winsWithAutohighlight++; }
             saveStats();
             checkAchievements();
-            renderStatsTab();
-            animateCards('stats-tab');
-            
+            renderStatistics();
             createConfetti();
-            
             setTimeout(() => {
-                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`, () => shuffleTiles());
+                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`, () => { shuffleTiles(true); });
             }, 1000);
         }
 
@@ -2211,42 +1768,67 @@
                 confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
                 confetti.style.animationDelay = Math.random() * 2 + 's';
                 document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 5000);
+                setTimeout(() => { confetti.remove(); }, 5000);
             }
         }
 
-        function renderTiles(size, initialAnimation = false) {
-            tiles.forEach((tile, index) => {
-                const row = Math.floor(index / size);
-                const col = index % size;
-                const targetX = col * (tileSize + tileGap);
-                const targetY = row * (tileSize + tileGap);
+        // ✨ ИСПРАВЛЕНО: Функция рендеринга теперь правильно разделяет анимации
+        function renderTiles(size, animationType = 'move') {
+            if (animationType === 'initial') {
+                // Возвращена старая анимация для создания поля
+                tiles.forEach((tile, index) => {
+                    const row = Math.floor(index / size);
+                    const col = index % size;
+                    const targetX = col * (tileSize + tileGap);
+                    const targetY = row * (tileSize + tileGap);
 
-                if (initialAnimation) {
                     tile.style.transition = 'none';
-                    tile.style.opacity = 1;
+                    tile.style.transform = `translate(${targetX}px, ${targetY - 20}px)`; 
+                    tile.style.opacity = 0;
+
+                    const delay = index * 25; // Та самая задержка для эффекта "змейки"
                     setTimeout(() => {
-                        tile.style.transition = `transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)`;
+                        tile.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
                         tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
-                    }, 50); 
-                } else {
-                    tile.style.transition = `transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease`;
+                        tile.style.opacity = 1;
+                        vibrationManager.tileAppear();
+                    }, delay);
+                });
+            } else if (animationType === 'shuffle') {
+                // "Летающая" анимация для перемешивания
+                vibrationManager.shuffle();
+                tiles.forEach((tile, index) => {
+                    const row = Math.floor(index / size);
+                    const col = index % size;
+                    const targetX = col * (tileSize + tileGap);
+                    const targetY = row * (tileSize + tileGap);
+                    tile.style.opacity = 1; 
+                    const randomDelay = Math.random() * 200;
+                    tile.style.transition = `transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${randomDelay}ms`;
+                    tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
+                });
+            } else { // 'move'
+                // Стандартная анимация для ходов игрока
+                tiles.forEach((tile, index) => {
+                    const row = Math.floor(index / size);
+                    const col = index % size;
+                    const targetX = col * (tileSize + tileGap);
+                    const targetY = row * (tileSize + tileGap);
+                    tile.style.transition = `transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease`;
                     tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
                     tile.style.opacity = 1;
-                }
-            });
-            highlightCorrectTiles(size);
+                });
+            }
+            highlightCorrectTiles(currentSize);
         }
 
         function highlightCorrectTiles(size) {
-            const correctColorPicker = document.getElementById('correctColor');
-            const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: size * size - 1}, (_, i) => i + 1);
-
+            const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
             tiles.forEach((tile, index) => {
                 const tileInner = tile.querySelector('.tile-inner');
                 if (tileInner || gameMode === 'image') { 
                     const tileValue = gameMode === 'image' ? parseInt(tile.id.replace('tile-', '')) : parseInt(tileInner.textContent);
-                    const isCorrect = (tileValue === checkTargetOrder[index]);
+                    let isCorrect = (tileValue === checkTargetOrder[index]);
                     if (isCorrect) {
                         tile.classList.add('correct');
                         tile.style.borderColor = correctColorPicker.value;
@@ -2259,22 +1841,15 @@
         }
         
         function updateColors(colorType) {
-            const bgColorPicker = document.getElementById('bgColor');
-            const borderColorPicker = document.getElementById('borderColor');
-            const tileColorPicker = document.getElementById('tileColor');
-            const textColorPicker = document.getElementById('textColor');
-
             document.body.style.backgroundColor = bgColorPicker.value;
             document.body.style.color = getContrastColor(bgColorPicker.value);
             gameField.style.borderColor = borderColorPicker.value;
-            
             tiles.forEach(tile => {
-                if (!tile.classList.contains('empty-tile') && !tile.classList.contains('obstacle-tile')) {
+                if (!tile.classList.contains('empty-tile') && !tile.classList.contains('obstacle-tile') && !tile.classList.contains('darkness-hidden') && !tile.classList.contains('hidden-path-hidden')) {
                     tile.style.backgroundColor = tileColorPicker.value;
                     tile.style.color = textColorPicker.value;
                 }
             });
-            
             highlightCorrectTiles(currentSize);
             gameStats.colorsChanged.add(colorType);
             saveStats();
@@ -2282,23 +1857,15 @@
         }
 
         function saveStats() {
-            const statsToSave = {
-                ...gameStats,
-                playedSizes: Array.from(gameStats.playedSizes),
-                colorsChanged: Array.from(gameStats.colorsChanged),
-                styleChanges: Array.from(gameStats.styleChanges),
-                modesTried: Array.from(gameStats.modesTried)
-            };
-            localStorage.setItem('gameStats_v13_final', JSON.stringify(statsToSave)); 
-            localStorage.setItem('completedAchievements_v13_final', JSON.stringify(completedAchievements)); 
+            const statsToSave = { ...gameStats, playedSizes: Array.from(gameStats.playedSizes), colorsChanged: Array.from(gameStats.colorsChanged), styleChanges: Array.from(gameStats.styleChanges), modesTried: Array.from(gameStats.modesTried) };
+            localStorage.setItem('gameStats_v9', JSON.stringify(statsToSave)); 
+            localStorage.setItem('completedAchievements_v9', JSON.stringify(completedAchievements)); 
         }
 
         function loadStats() {
-            const savedStats = localStorage.getItem('gameStats_v13_final');
-            const savedAchievements = localStorage.getItem('completedAchievements_v13_final');
-            
+            const savedStats = localStorage.getItem('gameStats_v9');
+            const savedAchievements = localStorage.getItem('completedAchievements_v9');
             initializeStats(); 
-
             if (savedStats) {
                 const parsedStats = JSON.parse(savedStats);
                 Object.assign(gameStats, parsedStats);
@@ -2306,7 +1873,6 @@
                 gameStats.colorsChanged = new Set(parsedStats.colorsChanged || []);
                 gameStats.styleChanges = new Set(parsedStats.styleChanges || []);
                 gameStats.modesTried = new Set(parsedStats.modesTried || ['classic']);
-                
                 if (parsedStats.gameRecords) {
                     for (const modeId in gameStats.gameRecords) {
                         if (parsedStats.gameRecords[modeId]) {
@@ -2319,17 +1885,17 @@
                     }
                 }
             }
-            
-            if (savedAchievements) completedAchievements = JSON.parse(savedAchievements);
-            
+            if (savedAchievements) { completedAchievements = JSON.parse(savedAchievements); }
             calculateAchievementScore();
+            renderAchievements();
+            renderStatistics();
         }
 
         function calculateAchievementScore() {
             let total = 0;
             completedAchievements.forEach(achId => {
                 const achievement = achievementsData.find(a => a.id === achId);
-                if (achievement) total += achievement.points;
+                if (achievement) { total += achievement.points; }
             });
             gameStats.achievementScore = total;
             saveStats();
@@ -2345,38 +1911,98 @@
                     changed = true;
                 }
             });
-            
-            if(changed) {
-                saveStats();
-                renderAchievementsTab();
-                renderStatsTab();
-            }
+            if(changed) { saveStats(); renderAchievements(); renderStatistics(); }
         }
 
         function showAchievementUnlocked(achievement) {
             const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed; top: 20px; right: 20px; background: white; padding: 15px;
-                border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                display: flex; align-items: center; gap: 15px; z-index: 1000;
-                transform: translateX(200%); transition: transform 0.5s ease;
-            `;
-            notification.innerHTML = `
-                <div style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                    <i class="fas ${achievement.icon}"></i>
-                </div>
-                <div>
-                    <div style="font-weight: bold; color: var(--primary-color);">Достижение разблокировано!</div>
-                    <div style="font-weight: 600; margin: 5px 0;">${achievement.title}</div>
-                    <div style="font-size: 0.9rem; color: #636e72;">+${achievement.points} очков</div>
-                </div>
-            `;
+            notification.className = 'achievement-notification';
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 15px; z-index: 1000; transform: translateX(200%); transition: transform 0.5s ease;';
+            notification.innerHTML = `<div class="achievement-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas ${achievement.icon}"></i></div><div><div style="font-weight: bold; color: var(--primary-color);">Достижение разблокировано!</div><div style="font-weight: 600; margin: 5px 0;">${achievement.title}</div><div style="font-size: 0.9rem; color: #636e72;">+${achievement.points} очков</div></div>`;
             document.body.appendChild(notification);
-            setTimeout(() => notification.style.transform = 'translateX(0)', 100);
-            setTimeout(() => {
-                notification.style.transform = 'translateX(200%)';
-                setTimeout(() => notification.remove(), 500);
-            }, 5000);
+            setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100);
+            setTimeout(() => { notification.style.transform = 'translateX(200%)'; setTimeout(() => { notification.remove(); }, 500); }, 5000);
+        }
+
+        function renderAchievements() {
+            achievementsGrid.innerHTML = '';
+            achievementsData.forEach(achievement => {
+                const isCompleted = completedAchievements.includes(achievement.id);
+                const progress = achievement.progress(gameStats);
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isCompleted ? '' : 'locked'}`;
+                card.innerHTML = `<div class="achievement-icon"><i class="fas ${achievement.icon}"></i></div><div class="achievement-title">${achievement.title}</div><div class="achievement-desc">${achievement.description}</div><div class="achievement-progress"><div class="progress-bar" style="width: ${progress * 100}%"></div></div><div class="achievement-points">+${achievement.points} очков</div>${isCompleted ? '<div class="ribbon">Получено!</div>' : ''}`;
+                achievementsGrid.appendChild(card);
+            });
+        }
+        
+        function renderStatistics() {
+            statsGrid.innerHTML = `<div class="stats-card"><i class="fas fa-gamepad stats-icon"></i><div class="stats-value">${gameStats.totalGamesWon}</div><div class="stats-label">Собрано игр</div></div><div class="stats-card"><i class="fas fa-arrows-alt-h stats-icon"></i><div class="stats-value">${gameStats.totalMoves}</div><div class="stats-label">Передвинуто плиток</div></div><div class="stats-card"><i class="fas fa-coins stats-icon"></i><div class="stats-value">${gameStats.totalScore}</div><div class="stats-label">Очков получено</div></div><div class="stats-card"><i class="fas fa-trophy stats-icon"></i><div class="stats-value">${gameStats.achievementScore}</div><div class="stats-label">Очки за достижения</div></div><div class="stats-list-card"><h3>Статистика по режимам и размерам:</h3><ul class="stats-list" id="statsModeSizeList"></ul></div>`;
+            const modeSizeList = document.getElementById('statsModeSizeList');
+            gameModes.forEach(mode => {
+                const modeLi = document.createElement('li');
+                modeLi.innerHTML = `<span class="stats-list-label">${mode.title}</span><span class="stats-list-value"></span>`;
+                modeSizeList.appendChild(modeLi);
+                const subList = document.createElement('ul');
+                subList.className = 'stats-sub-list';
+                modeLi.appendChild(subList);
+                const sortedSizes = Object.keys(gameStats.gameRecords[mode.id]).sort((a,b) => parseInt(a) - parseInt(b));
+                let modeHasData = false;
+                sortedSizes.forEach(size => {
+                    const record = gameStats.gameRecords[mode.id][size];
+                    if (record.gamesPlayed > 0) {
+                        modeHasData = true;
+                        const sizeLi = document.createElement('li');
+                        let statsHtml = `<span>Поле ${size}x${size}:</span><span>Игр: ${record.gamesPlayed}`;
+                        if (record.bestMoves !== Infinity) { statsHtml += `, Ходы: ${record.bestMoves}`; if (record.worstMoves !== 0 && record.worstMoves !== Infinity && record.worstMoves !== record.bestMoves) { statsHtml += ` (худш: ${record.worstMoves})`; } }
+                        if (record.bestTime !== Infinity) {
+                            const bestMin = Math.floor(record.bestTime / 60); const bestSec = record.bestTime % 60; const worstMin = Math.floor(record.worstTime / 60); const worstSec = record.worstTime % 60;
+                            statsHtml += `, Время: ${bestMin.toString().padStart(2, '0')}:${bestSec.toString().padStart(2, '0')}`;
+                            if (record.worstTime !== 0 && record.worstTime !== Infinity && record.worstTime !== record.bestTime) { statsHtml += ` (худш: ${worstMin.toString().padStart(2, '0')}:${worstSec.toString().padStart(2, '0')})`; }
+                        }
+                        statsHtml += `</span>`;
+                        sizeLi.innerHTML = statsHtml;
+                        subList.appendChild(sizeLi);
+                    }
+                });
+                if (!modeHasData) {
+                    const noDataLi = document.createElement('li');
+                    noDataLi.textContent = 'Нет данных для этого режима.';
+                    subList.appendChild(noDataLi);
+                }
+            });
+        }
+
+        function renderModes() {
+            modesGrid.innerHTML = '';
+            gameModes.forEach(mode => {
+                const card = document.createElement('div');
+                card.className = `mode-card ${mode.active ? 'active' : ''}`;
+                card.dataset.mode = mode.id;
+                card.innerHTML = `<div class="mode-icon"><i class="fas ${mode.icon}"></i></div><div class="mode-title">${mode.title}</div><div class="mode-desc">${mode.description}</div>`;
+                if (mode.id === 'image') {
+                    const inputGroup = document.createElement('div');
+                    inputGroup.className = 'input-group';
+                    inputGroup.style.marginTop = '10px';
+                    const imageInput = document.createElement('input');
+                    imageInput.type = 'file';
+                    imageInput.accept = 'image/*';
+                    imageInput.id = 'image-upload-input';
+                    imageInput.addEventListener('change', (e) => { loadImageForMode(e.target.files[0]); });
+                    const imageLabel = document.createElement('label');
+                    imageLabel.htmlFor = 'image-upload-input';
+                    imageLabel.className = 'btn btn-block';
+                    imageLabel.innerHTML = '<i class="fas fa-upload"></i> Выбрать файл';
+                    inputGroup.appendChild(imageInput);
+                    inputGroup.appendChild(imageLabel);
+                    card.appendChild(inputGroup);
+                }
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('label[for="image-upload-input"]')) { return; }
+                    setActiveMode(mode.id);
+                });
+                modesGrid.appendChild(card);
+            });
         }
 
         function setActiveMode(modeId) {
@@ -2384,21 +2010,12 @@
             gameStats.modesTried.add(modeId);
             saveStats();
             checkAchievements();
-            
-            gameModes.forEach(mode => mode.active = (mode.id === modeId));
-            
-            document.querySelectorAll('.mode-card').forEach(card => {
-                card.classList.toggle('active', card.dataset.mode === modeId);
-            });
-            
+            gameModes.forEach(mode => { mode.active = (mode.id === modeId); });
+            document.querySelectorAll('.mode-card').forEach(card => { card.classList.toggle('active', card.dataset.mode === modeId); });
             createGame(currentSize); 
-            shuffleTiles(); 
-            
-            if (gameMode === 'time') hintMessage.classList.add('active');
-            else {
-                hintMessage.classList.remove('active');
-                stopGameMechanisms(); 
-            }
+            shuffleTiles(true); // Используем начальную анимацию при смене режима
+            if (gameMode === 'time') { hintMessage.classList.add('active'); }
+            else { hintMessage.classList.remove('active'); stopGameMechanisms(); }
         }
 
         function loadImageForMode(file) {
@@ -2418,7 +2035,7 @@
                     imageModeData.canvas.width = img.width;
                     imageModeData.canvas.height = img.height;
                     imageModeData.ctx.drawImage(img, 0, 0);
-                    if (gameMode === 'image') applyImageToTiles();
+                    if (gameMode === 'image') { applyImageToTiles(); }
                 };
                 img.src = e.target.result;
             };
@@ -2430,10 +2047,9 @@
             const img = imageModeData.image;
             const tileWidth = img.width / currentSize;
             const tileHeight = img.height / currentSize;
-
-            tiles.forEach((tile) => {
+            tiles.forEach((tile, index) => {
                 if (tile.classList.contains('empty-tile')) {
-                    tile.style.backgroundImage = ''; return;
+                    tile.style.backgroundImage = ''; tile.style.backgroundSize = ''; tile.style.backgroundPosition = ''; return;
                 }
                 const originalNumber = parseInt(tile.id.replace('tile-', ''));
                 const originalIndex = originalNumber - 1;
@@ -2442,11 +2058,13 @@
                 const sx = col * tileWidth;
                 const sy = row * tileHeight;
                 const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
                 tempCanvas.width = tileWidth;
                 tempCanvas.height = tileHeight;
-                tempCanvas.getContext('2d').drawImage(img, sx, sy, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+                tempCtx.drawImage(img, sx, sy, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
                 tile.style.backgroundImage = `url(${tempCanvas.toDataURL()})`;
                 tile.style.backgroundSize = 'cover'; 
+                tile.style.backgroundPosition = 'center';
                 const tileInner = tile.querySelector('.tile-inner');
                 if (tileInner) tileInner.style.display = 'none'; 
             });
@@ -2454,12 +2072,12 @@
 
         function showMessageModal(title, message, onCloseCallback = null) {
             modalTitle.textContent = title;
-            modalMessage.innerHTML = message.replace(/\n/g, '<br>');
+            modalMessage.textContent = message;
             messageModal.classList.add('active');
             const closeHandler = () => {
                 messageModal.classList.remove('active');
                 modalCloseBtn.removeEventListener('click', closeHandler);
-                if (onCloseCallback) onCloseCallback();
+                if (onCloseCallback) { onCloseCallback(); }
             };
             modalCloseBtn.addEventListener('click', closeHandler);
         }
@@ -2468,49 +2086,138 @@
         gameField.addEventListener('click', (e) => {
             const tile = e.target.closest('.tile');
             if (tile) {
+                vibrationManager.click();
                 const tileIndex = tiles.indexOf(tile);
-                if (tileIndex !== -1) moveTile(tileIndex, currentSize);
+                if (tileIndex !== -1) { moveTile(tileIndex, currentSize); }
             }
         });
 
+        // ✨ ИСПРАВЛЕНО: Восстановлена логика обработки свайпов
         let swipeStartX, swipeStartY;
         gameField.addEventListener('touchstart', (e) => {
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-        });
-        gameField.addEventListener('touchmove', (e) => e.preventDefault());
-        gameField.addEventListener('touchend', (e) => {
-            const swipeEndX = e.changedTouches[0].clientX;
-            const swipeEndY = e.changedTouches[0].clientY;
-            const deltaX = swipeEndX - swipeStartX;
-            const deltaY = swipeEndY - swipeStartY;
-            let tileToMoveIndex = -1;
-            const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
-            const emptyTileCol = emptyTileIndex % currentSize;
-
-            if (Math.abs(deltaX) > Math.abs(deltaY)) { 
-                if (deltaX < 0 && emptyTileCol < currentSize - 1) tileToMoveIndex = emptyTileIndex + 1;
-                else if (deltaX > 0 && emptyTileCol > 0) tileToMoveIndex = emptyTileIndex - 1;
-            } else { 
-                if (deltaY < 0 && emptyTileRow < currentSize - 1) tileToMoveIndex = emptyTileIndex + currentSize;
-                else if (deltaY > 0 && emptyTileRow > 0) tileToMoveIndex = emptyTileIndex - currentSize;
+            if (e.touches.length === 1) {
+                swipeStartX = e.touches[0].clientX;
+                swipeStartY = e.touches[0].clientY;
             }
-            if (tileToMoveIndex !== -1) moveTile(tileToMoveIndex, currentSize);
+        }, { passive: true });
+
+        gameField.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        gameField.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length === 1) {
+                const swipeEndX = e.changedTouches[0].clientX;
+                const swipeEndY = e.changedTouches[0].clientY;
+
+                const deltaX = swipeEndX - swipeStartX;
+                const deltaY = swipeEndY - swipeStartY;
+
+                if (Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) return; // Игнорируем короткие движения (тапы)
+
+                let tileToMoveIndex = -1;
+                const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
+                const emptyTileCol = emptyTileIndex % currentSize;
+
+                // Определяем направление свайпа
+                if (Math.abs(deltaX) > Math.abs(deltaY)) { // Горизонтальный свайп
+                    if (deltaX > 0) { // Вправо
+                        if (emptyTileCol > 0) tileToMoveIndex = emptyTileIndex - 1;
+                    } else { // Влево
+                        if (emptyTileCol < currentSize - 1) tileToMoveIndex = emptyTileIndex + 1;
+                    }
+                } else { // Вертикальный свайп
+                    if (deltaY > 0) { // Вниз
+                        if (emptyTileRow > 0) tileToMoveIndex = emptyTileIndex - currentSize;
+                    } else { // Вверх
+                        if (emptyTileRow < currentSize - 1) tileToMoveIndex = emptyTileIndex + currentSize;
+                    }
+                }
+
+                if (tileToMoveIndex !== -1) {
+                    vibrationManager.click();
+                    moveTile(tileToMoveIndex, currentSize);
+                }
+            }
         });
 
-        // Initialize game
+        tileColorPicker.addEventListener('change', () => updateColors('tile'));
+        bgColorPicker.addEventListener('change', () => updateColors('bg'));
+        borderColorPicker.addEventListener('change', () => updateColors('border'));
+        textColorPicker.addEventListener('change', () => updateColors('text'));
+        highlightColorPicker.addEventListener('change', (e) => {
+            if (highlightedTile) {
+                highlightedTile.style.backgroundColor = highlightColorPicker.value;
+                highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
+            }
+             updateColors('highlight');
+        });
+        correctColorPicker.addEventListener('change', () => { highlightCorrectTiles(currentSize); updateColors('correct'); });
+
+        findNumberBtn.addEventListener('click', () => {
+            const number = parseInt(numberInput.value);
+            if (!isNaN(number)) { highlightNumber(number); }
+        });
+
+        numberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const number = parseInt(numberInput.value);
+                if (!isNaN(number)) { highlightNumber(number); }
+            }
+        });
+
+        applySizeBtn.addEventListener('click', () => {
+            const size = parseInt(sizeSlider.value);
+            if (size >= 2 && size <= 20) {
+                currentSize = size;
+                createGame(size);
+                shuffleTiles(true); // Используем начальную анимацию
+            }
+        });
+
+        shuffleBtn.addEventListener('click', () => shuffleTiles(false)); // Используем анимацию перемешивания
+        autoHighlightBtn.addEventListener('click', toggleAutoHighlight);
+        vibrationToggleBtn.addEventListener('click', () => { vibrationManager.toggle(); });
+        
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('.btn, .tab-button, .mode-card') && !e.target.closest('#vibrationToggleBtn')) {
+                vibrationManager.click();
+            }
+        });
+
         function init() {
+            vibrationManager.load();
+            initSliders();
             loadStats();
-            renderAllTabs();
+            renderModes();
             createGame(4); 
-            shuffleTiles();
+            shuffleTiles(true); // Используем начальную анимацию при первом запуске
             checkAchievements(); 
-            animateCards('settings-tab'); // Анимация для первой вкладки при загрузке
+            document.querySelector('.tab-content.active').querySelectorAll('.settings-card').forEach((card, index) => {
+                card.style.animation = `fadeInUp 0.5s ease-out ${index * 0.07}s forwards`;
+            });
         }
         
         init();
         
-        window.addEventListener('beforeunload', () => saveStats());
+        window.addEventListener('beforeunload', (e) => { saveStats(); });
+
+        let isModalActive = false;
+        messageModal.addEventListener('transitionend', () => { isModalActive = messageModal.classList.contains('active'); });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && timerInterval && !isModalActive) {
+                if (!checkWin(currentSize) && timeLeft > 0) { 
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    showMessageModal('Игра приостановлена', 'Время остановлено, пока вы не вернетесь. Нажмите ОК, чтобы продолжить.', () => {
+                        if (gameMode === 'time') { startTimer(); }
+                    });
+                }
+            } else if (!document.hidden && !isModalActive && gameMode === 'time' && !timerInterval && timeLeft > 0 && isTimeModeGameStarted) {
+                startTimer();
+            }
+        });
 
     </script>
 </body>
