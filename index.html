@@ -23,6 +23,12 @@
             --info-color: #0984e3;
         }
 
+        /* This @font-face rule will be dynamically updated by JavaScript */
+        @font-face {
+            font-family: 'CustomFont';
+            src: url(''); 
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -38,6 +44,10 @@
             flex-direction: column;
             overflow-x: hidden;
             transition: all 0.3s ease;
+        }
+
+        body.custom-font-all {
+            font-family: 'CustomFont', 'Montserrat', sans-serif !important;
         }
 
         .container {
@@ -143,6 +153,10 @@
             user-select: none;
             overflow: hidden; /* Для режима с картинкой */
             opacity: 0; /* Изначально скрыты для анимации */
+        }
+
+        .tile.custom-font-tile {
+            font-family: 'CustomFont', 'Montserrat', sans-serif !important;
         }
 
         .tile.show {
@@ -813,6 +827,115 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Demo Game Field for Solver Speed Modal */
+        .demo-game-field {
+            display: grid;
+            grid-template-columns: repeat(2, 50px); /* Small fixed size */
+            grid-template-rows: repeat(2, 50px);
+            gap: 5px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            margin: 20px auto;
+            width: fit-content;
+            position: relative; /* For absolute positioning of demo-tile */
+            overflow: hidden; /* Ensure tiles don't go outside */
+        }
+
+        .demo-tile, .demo-empty {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 5px;
+            position: absolute;
+            transition: transform linear; /* Transition property, duration set by JS */
+        }
+
+        .demo-tile {
+            background-color: var(--tile-color);
+            color: var(--dark-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            /* Initial position: bottom-right (index 3) */
+            transform: translate(55px, 55px); /* 1 * (50+5), 1 * (50+5) */
+        }
+
+        .demo-empty {
+            background-color: transparent;
+            border: 1px dashed #ccc;
+            /* Initial position: top-left (index 0) */
+            transform: translate(0px, 0px);
+        }
+
+        /* Font upload specific styles */
+        .font-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .font-option-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .font-option-row input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .font-list-container {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .font-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+
+        .font-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .font-list-item button {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .font-list-item span {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+        }
+
+        .warning-message {
+            font-size: 0.9rem;
+            color: var(--danger-color);
+            background-color: rgba(225, 112, 85, 0.1);
+            border: 1px solid var(--danger-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        .warning-message.active {
+            display: block;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header-content {
@@ -881,6 +1004,7 @@
                 <span>Очки: 0</span>
             </div>
             <div class="score-display" id="gameStatusDisplay"></div>
+            <div class="score-display" id="solverMessageDisplay" style="display: none;"></div> <!-- NEW: For header messages -->
         </div>
     </header>
 
@@ -926,6 +1050,17 @@
                         <button class="btn btn-warning" id="shuffleBtn">
                             <i class="fas fa-random"></i> Перемешать
                         </button>
+                         <button class="btn btn-info" id="hintBtn">
+                            <i class="fas fa-lightbulb"></i> Подсказка
+                        </button>
+                        <div class="warning-message" id="hintWarningMessage">
+                            Экспериментальная функция: могут быть ошибки. Если она сдвигает правильные плитки, не переживайте, нажмите ещё несколько раз.
+                        </div>
+                        <!-- Strategic Hint button removed -->
+                        <!-- LLM Hint Display removed -->
+                        <button class="btn btn-danger" id="solveBtn">
+                            <i class="fas fa-magic"></i> Решить головоломку
+                        </button>
                     </div>
 
                     <div class="settings-card">
@@ -944,6 +1079,29 @@
                             <span class="control-label">Размер шрифта:</span>
                             <input type="range" id="fontSizeSlider" min="12" max="48" value="24" step="1">
                             <span class="range-value" id="fontSizeValue">24px</span>
+                        </div>
+                        <!-- NEW: Font Upload -->
+                        <div class="input-group">
+                            <label for="font-upload-input" class="btn btn-block">
+                                <i class="fas fa-font"></i> Загрузить шрифт (.ttf)
+                            </label>
+                            <input type="file" id="font-upload-input" accept=".ttf">
+                        </div>
+                        <div class="font-options" id="fontOptions" style="display: none;">
+                            <div class="font-option-row">
+                                <input type="radio" id="fontApplyTiles" name="fontApplyScope" value="tiles">
+                                <label for="fontApplyTiles">Применить к плиткам</label>
+                            </div>
+                            <div class="font-option-row">
+                                <input type="radio" id="fontApplyAll" name="fontApplyScope" value="all">
+                                <label for="fontApplyAll">Применить ко всему интерфейсу</label>
+                            </div>
+                            <button class="btn btn-info" id="applyFontBtn">
+                                <i class="fas fa-check"></i> Применить шрифт
+                            </button>
+                            <button class="btn btn-danger" id="resetFontBtn">
+                                <i class="fas fa-times"></i> Сбросить шрифт
+                            </button>
                         </div>
                     </div>
 
@@ -1005,6 +1163,78 @@
                                 <i class="fas fa-check"></i> Включена
                             </button>
                         </div>
+                        <!-- NEW: Show Solver Modal Toggle -->
+                        <div class="control-row">
+                            <span class="control-label">Показывать модальное окно:</span>
+                            <button class="btn" id="showSolverModalToggleBtn">
+                                <i class="fas fa-times"></i> Выключено
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Solver Mode Setting -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-calculator"></i> Режим просчета решения</h3>
+                        <div class="control-row">
+                            <span class="control-label">Расчет:</span>
+                            <button class="btn" id="solverModeToggleBtn">
+                                <i class="fas fa-bolt"></i> Моментальный
+                            </button>
+                        </div>
+                        <div class="warning-message" id="solverModeWarning">
+                            Данный режим считает поэтапно каждый ход и может зависнуть из-за плохой оптимизации. Если вы не уверены, используйте моментальный.
+                        </div>
+                    </div>
+                    <!-- Solver Speed Setting -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-tachometer-alt"></i> Скорость сборки головоломки</h3>
+                        <div class="control-row">
+                            <span class="control-label">Скорость: <span id="solverSpeedDisplay">150 мс</span></span>
+                            <button class="btn" id="changeSolverSpeedBtn">
+                                <i class="fas fa-edit"></i> Изменить
+                            </button>
+                        </div>
+                    </div>
+                    <!-- NEW: Shuffle Animation Type Setting -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-random"></i> Анимация перемешивания</h3>
+                        <div class="control-row" style="flex-direction: column; align-items: flex-start;">
+                            <div class="font-option-row">
+                                <input type="radio" id="shuffleAnimFast" name="shuffleAnim" value="fast" checked>
+                                <label for="shuffleAnimFast">Быстрая (мгновенная)</label>
+                            </div>
+                            <div class="font-option-row">
+                                <input type="radio" id="shuffleAnimComplex" name="shuffleAnim" value="complex">
+                                <label for="shuffleAnimComplex">Сложная (с движением)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- NEW: Music Settings -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-music"></i> Музыка</h3>
+                        <div class="control-row">
+                            <span class="control-label">Громкость:</span>
+                            <input type="range" id="musicVolumeSlider" min="0" max="100" value="50" step="1">
+                            <span class="range-value" id="musicVolumeValue">50%</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="music-upload-input" class="btn btn-block">
+                                <i class="fas fa-upload"></i> Загрузить свою песню (.mp3)
+                            </label>
+                            <input type="file" id="music-upload-input" accept=".mp3">
+                        </div>
+                        <div class="font-list-container" id="musicPlaylistContainer">
+                            <ul id="musicPlaylist">
+                                <!-- Default music will be added here -->
+                            </ul>
+                        </div>
+                        <div class="control-row" style="justify-content: center; margin-top: 15px;">
+                            <button class="btn btn-info" id="playMusicBtn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn btn-info" id="pauseMusicBtn">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1032,6 +1262,40 @@
         </div>
     </div>
 
+    <!-- Loading Modal -->
+    <div class="modal-overlay" id="loadingModal">
+        <div class="modal-content">
+            <h3 id="loadingTitle">Решение головоломки...</h3>
+            <p id="loadingMessage">Просчитываем оптимальные ходы. Это может занять несколько секунд.</p>
+            <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-top: 20px;"></i>
+        </div>
+    </div>
+
+    <!-- Solver Speed Modal -->
+    <div class="modal-overlay" id="solverSpeedModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-tachometer-alt"></i> Настройка скорости сборки</h3>
+            <p>Настройте скорость анимации автоматического решения.</p>
+            <div class="demo-game-field" id="demoGameField">
+                <div class="demo-tile" id="demoTile1">1</div>
+                <div class="demo-empty" id="demoEmptyTile"></div>
+            </div>
+            <div class="control-row">
+                <span class="control-label">Задержка на ход:</span>
+                <input type="range" id="demoSpeedSlider" min="50" max="1000" value="150" step="10">
+                <span class="range-value" id="demoSpeedValue">150 мс</span>
+            </div>
+            <button class="btn btn-success" id="applySolverSpeedBtn">
+                <i class="fas fa-check"></i> Применить
+            </button>
+            <button class="btn" id="closeSolverSpeedModalBtn">
+                <i class="fas fa-times"></i> Закрыть
+            </button>
+        </div>
+    </div>
+
+    <audio id="backgroundMusic" loop></audio> <!-- NEW: Audio element -->
+
     <script>
         // DOM elements
         const gameField = document.getElementById('gameField');
@@ -1043,6 +1307,8 @@
         const applySizeBtn = document.getElementById('applySize');
         const shuffleBtn = document.getElementById('shuffleBtn');
         const autoHighlightBtn = document.getElementById('autoHighlightBtn');
+        const hintBtn = document.getElementById('hintBtn'); 
+        const solveBtn = document.getElementById('solveBtn'); 
         const bgColorPicker = document.getElementById('bgColor');
         const borderColorPicker = document.getElementById('borderColor');
         const textColorPicker = document.getElementById('textColor');
@@ -1065,6 +1331,39 @@
         const modalCloseBtn = document.getElementById('modalCloseBtn');
         const hintMessage = document.getElementById('hintMessage');
         const vibrationToggleBtn = document.getElementById('vibrationToggleBtn');
+        const loadingModal = document.getElementById('loadingModal'); 
+        const solverModeToggleBtn = document.getElementById('solverModeToggleBtn'); 
+        const solverSpeedModal = document.getElementById('solverSpeedModal'); 
+        const demoGameField = document.getElementById('demoGameField'); 
+        const demoTile1 = document.getElementById('demoTile1'); 
+        const demoEmptyTile = document.getElementById('demoEmptyTile'); 
+        const demoSpeedSlider = document.getElementById('demoSpeedSlider'); 
+        const demoSpeedValue = document.getElementById('demoSpeedValue'); 
+        const applySolverSpeedBtn = document.getElementById('applySolverSpeedBtn'); 
+        const closeSolverSpeedModalBtn = document.getElementById('closeSolverSpeedModalBtn'); 
+        const solverSpeedDisplay = document.getElementById('solverSpeedDisplay'); 
+        const changeSolverSpeedBtn = document.getElementById('changeSolverSpeedBtn'); 
+        const fontUploadInput = document.getElementById('font-upload-input'); // NEW
+        const fontOptions = document.getElementById('fontOptions'); // NEW
+        const fontApplyTilesRadio = document.getElementById('fontApplyTiles'); // NEW
+        const fontApplyAllRadio = document.getElementById('fontApplyAll'); // NEW
+        const applyFontBtn = document.getElementById('applyFontBtn'); // NEW
+        const resetFontBtn = document.getElementById('resetFontBtn'); // NEW
+        const backgroundMusic = document.getElementById('backgroundMusic'); // NEW
+        const musicVolumeSlider = document.getElementById('musicVolumeSlider'); // NEW
+        const musicVolumeValue = document.getElementById('musicVolumeValue'); // NEW
+        const musicUploadInput = document.getElementById('music-upload-input'); // NEW
+        const musicPlaylist = document.getElementById('musicPlaylist'); // NEW
+        const playMusicBtn = document.getElementById('playMusicBtn'); // NEW
+        const pauseMusicBtn = document.getElementById('pauseMusicBtn'); // NEW
+        const showSolverModalToggleBtn = document.getElementById('showSolverModalToggleBtn'); // NEW
+        const solverMessageDisplay = document.getElementById('solverMessageDisplay'); // NEW
+        const hintWarningMessage = document.getElementById('hintWarningMessage'); // NEW
+        const solverModeWarning = document.getElementById('solverModeWarning'); // NEW
+        // const strategicHintBtn = document.getElementById('strategicHintBtn'); // REMOVED LLM
+        // const llmHintDisplay = document.getElementById('llmHintDisplay'); // REMOVED LLM
+        const shuffleAnimFastRadio = document.getElementById('shuffleAnimFast'); // NEW Shuffle Anim
+        const shuffleAnimComplexRadio = document.getElementById('shuffleAnimComplex'); // NEW Shuffle Anim
         
         // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
@@ -1134,13 +1433,16 @@
             shuffle: function() { this.vibrate([50, 30, 50]); },
             tileAppear: function() { this.vibrate(5); },
             win: function() { this.vibrate([100, 50, 100, 50, 100]); },
-            error: function() { this.vibrate([70, 40, 70]); }
+            error: function() { this.vibrate([70, 40, 70]); },
+            hint: function() { this.vibrate(30); }, 
+            solve: function() { this.vibrate([50, 10, 50, 10, 50]); } 
         };
 
 
         // Game variables
-        let tiles = [];
-        let emptyTileIndex = 0;
+        let tiles = []; // DOM elements for tiles
+        let currentBoardState = []; // Array representing the current board numbers
+        let emptyTileIndex = 0; // Index of the empty tile in `tiles` array
         let currentSize = 4;
         let highlightedTile = null;
         let autoHighlightInterval = null;
@@ -1156,7 +1458,7 @@
         let timerInterval = null;
         let timeLeft = 0;
         let movesLeft = 0;
-        let targetOrder = [];
+        let targetOrder = []; // Used for reverse mode
         let obstacleTiles = new Set();
         let imageModeData = {
             imageUrl: '',
@@ -1168,6 +1470,22 @@
         let isTimeModeGameStarted = false;
         let darknessRevealedTiles = new Set();
         let teleportMoveCounter = 0;
+        let isSolvingPuzzle = false; 
+        let usedHintInCurrentGame = false; 
+        let usedAutoSolveInCurrentGame = false; 
+        let solverMode = 'instant'; // Changed default to 'instant'
+        let solverAnimationSpeed = 150; // Default 150ms delay per move for solver animation
+        let customFontLoaded = false; // NEW
+        let customFontUrl = ''; // NEW: Store the URL of the loaded font
+        let customFontApplyScope = 'none'; // 'none', 'tiles', 'all' // NEW
+        let musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }]; // NEW
+        let currentMusicIndex = 0; // NEW
+        let showSolverModal = false; // NEW: Default to false as requested
+        let currentSolverPath = null; // NEW: Stores the full path for solver/hint
+        let currentSolverPathStep = 0; // NEW: Current step in the pre-calculated path
+        let isCalculatingPath = false; // NEW: To prevent multiple calculations
+        let customFontStyleElement = null; // NEW: Reference to the dynamically created style element for custom font
+        let shuffleAnimationType = 'fast'; // NEW: Default shuffle animation type
 
         // Achievement Data
         const achievementsData = [
@@ -1179,14 +1497,14 @@
             { id: 'color_changer', title: 'Художник', description: 'Измените все 5 типов цветов в настройках.', icon: 'fa-paint-brush', points: 20, condition: (stats) => stats.colorsChanged.size >= 5, progress: (stats) => Math.min(stats.colorsChanged.size / 5, 1) },
             { id: 'size_master_small', title: 'Миниатюрист', description: 'Выиграйте игру на поле 2x2.', icon: 'fa-compress-arrows-alt', points: 50, condition: (stats) => stats.gamesWonBySize[2] > 0, progress: (stats) => stats.gamesWonBySize[2] > 0 ? 1 : 0 },
             { id: 'size_master_big', title: 'Гроссмейстер', description: 'Выиграйте игру на поле 8x8.', icon: 'fa-expand-arrows-alt', points: 150, condition: (stats) => stats.gamesWonBySize[8] > 0, progress: (stats) => stats.gamesWonBySize[8] > 0 ? 1: 0 },
-            { id: 'size_master_titanic', title: 'Титанический Труд', description: 'Выиграйте игру на поле 20x20.', icon: 'fa-globe-americas', points: 500, condition: (stats) => stats.gamesWonBySize[20] > 0, progress: (stats) => stats.gamesWonBySize[20] > 0 ? 1 : 0 },
+            { id: 'size_master_titanic', title: 'Титанический Труд', description: 'Выиграйте игру на поле 20x20.', icon: 'fa-globe-americas', points: 500, condition: (stats) => stats.gamesWonBySize[20] > 0, progress: (stats) => Math.min(stats.gamesWonBySize[20] / 1, 1) },
             { id: 'size_master_all', title: 'Мастер Размеров', description: 'Сыграйте на 5 разных размерах поля.', icon: 'fa-ruler-combined', points: 100, condition: (stats) => stats.playedSizes.size >= 5, progress: (stats) => Math.min(stats.playedSizes.size / 5, 1) },
             { id: 'mode_explorer', title: 'Режимный исследователь', description: 'Попробуйте 5 разных режимов игры.', icon: 'fa-route', points: 100, condition: (stats) => stats.modesTried.size >= 5, progress: (stats) => Math.min(stats.modesTried.size / 5, 1) },
             { id: 'mode_master', title: 'Повелитель Режимов', description: 'Попробуйте все доступные режимы игры.', icon: 'fa-dungeon', points: 250, condition: (stats) => stats.modesTried.size >= gameModes.length, progress: (stats) => Math.min(stats.modesTried.size / gameModes.length, 1) },
             { id: 'win_classic', title: 'Классик', description: 'Выиграйте в режиме "Классический".', icon: 'fa-th', points: 20, condition: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.classic && stats.gameRecords.classic[currentSize] && stats.gameRecords.classic[currentSize].gamesPlayed > 0 ? 1 : 0 },
             { id: 'win_time', title: 'Спринтер', description: 'Выиграйте в режиме "На время".', icon: 'fa-stopwatch', points: 30, condition: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.time && stats.gameRecords.time[currentSize] && stats.gameRecords.time[currentSize].gamesPlayed > 0 ? 1 : 0 },
             { id: 'win_moves', title: 'Тактик', description: 'Выиграйте в режиме "С ограничением ходов".', icon: 'fa-shoe-prints', points: 30, condition: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.moves && stats.gameRecords.moves[currentSize] && stats.gameRecords.moves[currentSize].gamesPlayed > 0 ? 1 : 0 },
-            { id: 'win_reverse', title: 'Реверсер', description: 'Выиграйте в режиме "Обратный".', icon: 'fa-exchange-alt', points: 40, condition: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'win_reverse', title: 'Реверсер', description: 'Начните с собранного состояния и соберите в обратном порядке', icon: 'fa-exchange-alt', points: 40, condition: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.reverse && stats.gameRecords.reverse[currentSize] && stats.gameRecords.reverse[currentSize].gamesPlayed > 0 ? 1 : 0 },
             { id: 'collector_10', title: 'Коллекционер', description: 'Выиграйте 10 игр.', icon: 'fa-medal', points: 100, condition: (stats) => stats.totalGamesWon >= 10, progress: (stats) => Math.min(stats.totalGamesWon / 10, 1) },
             { id: 'collector_50', title: 'Энтузиаст', description: 'Выиграйте 50 игр.', icon: 'fa-award', points: 250, condition: (stats) => stats.totalGamesWon >= 50, progress: (stats) => Math.min(stats.totalGamesWon / 50, 1) },
             { id: 'mover_1k', title: 'Непоседа', description: 'Сделайте 1000 ходов.', icon: 'fa-walking', points: 50, condition: (stats) => stats.totalMoves >= 1000, progress: (stats) => Math.min(stats.totalMoves / 1000, 1) },
@@ -1204,14 +1522,20 @@
             { id: 'win_teleport', title: 'Мастер телепортации', description: 'Выиграйте в режиме "Телепорт".', icon: 'fa-random', points: 75, condition: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.teleport && stats.gameRecords.teleport[currentSize] && stats.gameRecords.teleport[currentSize].gamesPlayed > 0 ? 1 : 0 },
             { id: 'win_vortex', title: 'Мастер вихря', description: 'Выиграйте в режиме "Вихрь".', icon: 'fa-wind', points: 80, condition: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.vortex && stats.gameRecords.vortex[currentSize] && stats.gameRecords.vortex[currentSize].gamesPlayed > 0 ? 1 : 0 },
             { id: 'win_hidden_path', title: 'Проводник', description: 'Выиграйте в режиме "Скрытый путь".', icon: 'fa-eye-slash', points: 85, condition: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.hidden_path && stats.gameRecords.hidden_path[currentSize] && stats.gameRecords.hidden_path[currentSize].gamesPlayed > 0 ? 1 : 0 },
-            { id: 'win_darkness', title: 'Ночной странник', description: 'Выиграйте в режиме "Темнота".', icon: 'fa-moon', points: 90, condition: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0 ? 1 : 0 }
+            { id: 'win_darkness', title: 'Ночной странник', description: 'Выиграйте в режиме "Темнота".', icon: 'fa-moon', points: 90, condition: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0, progress: (stats) => stats.gameRecords.darkness && stats.gameRecords.darkness[currentSize] && stats.gameRecords.darkness[currentSize].gamesPlayed > 0 ? 1 : 0 },
+            { id: 'hint_seeker_10', title: 'Искатель подсказок', description: 'Использовать подсказки 10 раз.', icon: 'fa-compass', points: 20, condition: (stats) => stats.hintsUsed >= 10, progress: (stats) => Math.min(stats.hintsUsed / 10, 1) }, 
+            { id: 'hint_seeker_100', title: 'Путеводитель', description: 'Использовать подсказки 100 раз.', icon: 'fa-map-signs', points: 50, condition: (stats) => stats.hintsUsed >= 100, progress: (stats) => Math.min(stats.hintsUsed / 100, 1) }, 
+            { id: 'win_with_hint', title: 'Удачный старт', description: 'Выиграйте 1 игру, используя подсказки.', icon: 'fa-handshake', points: 25, condition: (stats) => stats.winsWithHints > 0, progress: (stats) => stats.winsWithHints > 0 ? 1 : 0 }, 
+            { id: 'win_with_hint_5', title: 'При поддержке', description: 'Выиграйте 5 игр, используя подсказки.', icon: 'fa-people-carry', points: 75, condition: (stats) => stats.winsWithHints >= 5, progress: (stats) => Math.min(stats.winsWithHints / 5, 1) }, 
+            { id: 'auto_solver_1', title: 'Малая автоматизация', description: 'Выиграйте 1 игру, используя кнопку "Решить головоломку".', icon: 'fa-robot', points: 50, condition: (stats) => stats.autoSolvedGames > 0, progress: (stats) => stats.autoSolvedGames > 0 ? 1 : 0 }, 
+            { id: 'auto_solver_5', title: 'Полная автоматизация', description: 'Выиграйте 5 игр, используя кнопку "Решить головоломку".', icon: 'fa-cogs', points: 150, condition: (stats) => stats.autoSolvedGames >= 5, progress: (stats) => Math.min(stats.autoSolvedGames / 5, 1) } 
         ];
 
         // Game Modes Data
         const gameModes = [
             { id: 'classic', title: 'Классический', description: 'Стандартные пятнашки', icon: 'fa-th', active: true, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'time', title: 'На время', description: 'Соберите головоломку как можно быстрее', icon: 'fa-stopwatch', active: false, getLimits: (size) => ({ moves: Infinity, time: size * size * 5 }) },
-            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false, getLimits: (size) => ({ moves: size * size * 15, time: Infinity }) },
+            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false, getLimits: (size) => ({ moves: size * size * 10, time: Infinity }) }, // Fixed: Set a default move limit
             { id: 'reverse', title: 'Обратный', description: 'Начните с собранного состояния и соберите в обратном порядке', icon: 'fa-exchange-alt', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'image', title: 'С картинкой', description: 'Вместо цифр - фрагменты изображения', icon: 'fa-image', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'obstacle', title: 'С препятствиями', description: 'Некоторые плитки заблокированы на своих местах', icon: 'fa-ban', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }), getObstacleCount: (size) => Math.max(1, Math.floor(size * size * 0.05)) },
@@ -1227,6 +1551,7 @@
         function initializeStats() {
              gameStats = {
                 currentMoves: 0, totalMoves: 0, totalScore: 0, achievementScore: 0, totalGamesWon: 0, shuffles: 0, numbersFound: 0, winsWithAutohighlight: 0,
+                hintsUsed: 0, winsWithHints: 0, autoSolvedGames: 0, 
                 playedSizes: new Set(), colorsChanged: new Set(), styleChanges: new Set(), modesTried: new Set(['classic']), gamesWonBySize: {}, gameRecords: {} 
             };
             const maxSliderSize = parseInt(sizeSlider.max);
@@ -1243,10 +1568,16 @@
             tileSizeValue.textContent = tileSizeSlider.value + 'px';
             tileRadiusValue.textContent = tileRadiusSlider.value + 'px';
             fontSizeValue.textContent = fontSizeSlider.value + 'px';
+            musicVolumeValue.textContent = musicVolumeSlider.value + '%'; // NEW
             sizeSlider.addEventListener('input', () => { sizeValue.textContent = sizeSlider.value; });
             tileSizeSlider.addEventListener('input', () => { tileSize = parseInt(tileSizeSlider.value); tileSizeValue.textContent = tileSize + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('tileSize'); saveStats(); checkAchievements(); });
             tileRadiusSlider.addEventListener('input', () => { tileRadius = parseInt(tileRadiusSlider.value); tileRadiusValue.textContent = tileRadius + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('tileRadius'); saveStats(); checkAchievements(); });
             fontSizeSlider.addEventListener('input', () => { fontSize = parseInt(fontSizeSlider.value); fontSizeValue.textContent = fontSize + 'px'; applyVisualUpdates(); gameStats.styleChanges.add('fontSize'); saveStats(); checkAchievements(); });
+            musicVolumeSlider.addEventListener('input', () => { // NEW
+                backgroundMusic.volume = musicVolumeSlider.value / 100;
+                musicVolumeValue.textContent = musicVolumeSlider.value + '%';
+                saveStats();
+            });
         }
         
         function applyVisualUpdates() {
@@ -1294,15 +1625,22 @@
             stopGameMechanisms(); 
             gameField.innerHTML = '';
             tiles = [];
+            currentBoardState = []; // Reset current board state
             emptyTileIndex = size * size - 1;
             currentSize = size;
             currentScore = 0;
             gameStats.currentMoves = 0;
+            usedHintInCurrentGame = false; 
+            usedAutoSolveInCurrentGame = false; 
             isTimeModeGameStarted = false;
             timeLeft = 0;
             movesLeft = 0;
             obstacleTiles.clear();
             teleportMoveCounter = 0;
+            currentSolverPath = null; // NEW: Reset hint/solver path on new game
+            currentSolverPathStep = 0; // NEW
+            isCalculatingPath = false; // NEW
+
             const currentMode = gameModes.find(mode => mode.id === gameMode);
             const limits = currentMode.getLimits(currentSize);
             if (gameMode === 'moves') { movesLeft = limits.moves; }
@@ -1341,6 +1679,7 @@
             tiles.push(emptyTile);
             gameField.appendChild(emptyTile);
             updateScore();
+            applyCustomFont(); // NEW: Apply font on game creation
         }
 
         function updateScore() {
@@ -1393,7 +1732,7 @@
             const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
             for (let num = 0; num < checkTargetOrder.length; num++) {
                 const expectedValue = checkTargetOrder[num]; 
-                const currentTileAtPosition = tiles.find(t => t.querySelector('.tile-inner')?.textContent == expectedValue);
+                const currentTileAtPosition = tiles.find(t => !t.classList.contains('empty-tile') && (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent)) == expectedValue);
                 if (currentTileAtPosition) {
                     const currentTileIndex = tiles.indexOf(currentTileAtPosition);
                     if (currentTileIndex !== num) { 
@@ -1401,7 +1740,7 @@
                         return currentTargetNumber;
                     }
                 } else {
-                    const tileAtCurrentIndexValue = tiles[num].querySelector('.tile-inner')?.textContent;
+                    const tileAtCurrentIndexValue = gameMode === 'image' ? parseInt(tiles[num].id.replace('tile-', '')) : parseInt(tiles[num].querySelector('.tile-inner')?.textContent);
                     if (parseInt(tileAtCurrentIndexValue) !== expectedValue) {
                          currentTargetNumber = expectedValue;
                          return currentTargetNumber;
@@ -1444,32 +1783,159 @@
             if (isAutoHighlighting) { stopAutoHighlight(); } else { autoHighlightNext(); }
         }
 
-        function shuffleTiles(isInitialShuffle = false) {
+        // Helper function for the "fast" shuffle (extracted from original shuffleTiles)
+        function shuffleTilesInstant(isInitialShuffle, predefinedShuffledValues = null, predefinedEmptyIndex = -1) {
+            let boardValues;
+            let emptyTileCurrentPosition;
+
+            if (predefinedShuffledValues) {
+                boardValues = predefinedShuffledValues;
+                emptyTileCurrentPosition = predefinedEmptyIndex;
+            } else {
+                boardValues = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+                boardValues.push(0); // Add empty tile value
+
+                let solvable = false;
+                while (!solvable) {
+                    boardValues.sort(() => Math.random() - 0.5);
+                    emptyTileCurrentPosition = boardValues.indexOf(0);
+                    solvable = isSolvable(boardValues, currentSize, emptyTileCurrentPosition);
+                }
+            }
+            
+            let newTilesOrder = [];
+            for (let i = 0; i < boardValues.length; i++) {
+                if (boardValues[i] === 0) {
+                    newTilesOrder.push(tiles.find(t => t.classList.contains('empty-tile')));
+                    emptyTileIndex = i;
+                } else {
+                    newTilesOrder.push(tiles.find(t => {
+                        const tileValue = t.classList.contains('empty-tile') ? 0 : (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
+                        return tileValue === boardValues[i];
+                    }));
+                }
+            }
+            tiles = newTilesOrder;
+            currentBoardState = boardValues; // Update `currentBoardState` with the new order
+            
+            renderTiles(currentSize, 'shuffle'); // Use 'shuffle' animation type for instant
+        }
+
+        async function shuffleTiles(isInitialShuffle = false) {
             stopGameMechanisms();
             gameStats.shuffles++;
             saveStats();
             checkAchievements();
-            const numbers = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-            let tempTiles = [...tiles.filter(t => !t.classList.contains('empty-tile'))];
-            let solvable = false;
-            while (!solvable) {
-                for (let i = tempTiles.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [tempTiles[i], tempTiles[j]] = [tempTiles[j], tempTiles[i]];
-                }
-                let valuesForSolvabilityCheck = tempTiles.map(t => parseInt(t.querySelector('.tile-inner')?.textContent));
-                valuesForSolvabilityCheck.push(currentSize * currentSize); 
-                solvable = isSolvable(valuesForSolvabilityCheck, currentSize, currentSize * currentSize - 1); 
-            }
-            const emptyTileElement = tiles.find(t => t.classList.contains('empty-tile'));
-            tiles = [...tempTiles, emptyTileElement];
-            emptyTileIndex = tiles.length - 1; 
-            applyModeSpecificStylesAndLogic();
+            
+            currentSolverPath = null;
+            currentSolverPathStep = 0;
+            isCalculatingPath = false;
+            updateSolverMessage('');
+            // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint on shuffle
 
-            if (isInitialShuffle) {
-                renderTiles(currentSize, 'initial');
-            } else {
-                renderTiles(currentSize, 'shuffle');
+            // Disable buttons during shuffle
+            shuffleBtn.disabled = true;
+            applySizeBtn.disabled = true;
+            hintBtn.disabled = true;
+            solveBtn.disabled = true;
+            // strategicHintBtn.disabled = true; // REMOVED LLM: Disable strategic hint
+
+            try {
+                if (isInitialShuffle) { // Always use 'initial' animation for first shuffle
+                    shuffleTilesInstant(true);
+                    applyModeSpecificStylesAndLogic(); // Apply mode styles after initial render
+                    return; // Exit early for initial shuffle
+                }
+
+                if (shuffleAnimationType === 'complex' && currentSize === 4) { // Complex animation only for 4x4 for now
+                    updateSolverMessage('Просчитываю сложную анимацию перемешивания...');
+
+                    // 1. Generate a solvable target shuffled state
+                    let targetShuffledValues = [];
+                    let emptyTileTargetPosition = -1;
+                    let solvable = false;
+                    while (!solvable) {
+                        targetShuffledValues = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+                        targetShuffledValues.push(0);
+                        targetShuffledValues.sort(() => Math.random() - 0.5);
+                        emptyTileTargetPosition = targetShuffledValues.indexOf(0);
+                        solvable = isSolvable(targetShuffledValues, currentSize, emptyTileTargetPosition);
+                    }
+
+                    // 2. Calculate the path from the *target shuffled state* to the *solved state*
+                    const solvedBoard = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+                    solvedBoard.push(0); 
+
+                    const goalTargetsForSolver = getGoalTargets(currentSize); 
+
+                    const pathToSolveTargetShuffled = await findPathToGoal(targetShuffledValues, currentSize, goalTargetsForSolver, []);
+                    
+                    if (!pathToSolveTargetShuffled) {
+                        console.warn("Could not find path for complex shuffle, falling back to fast animation.");
+                        updateSolverMessage('Не удалось просчитать сложную анимацию. Перемешиваю быстро.');
+                        await new Promise(resolve => setTimeout(resolve, 1000)); 
+                        hideLoadingOverlay();
+                        shuffleTilesInstant(isInitialShuffle);
+                        return;
+                    }
+
+                    const pathToShuffle = pathToSolveTargetShuffled.reverse();
+
+                    // 3. Reset the game board to the solved state visually and logically
+                    let tempTiles = [];
+                    let tempBoardState = [];
+                    for (let i = 1; i <= currentSize * currentSize - 1; i++) {
+                        tempTiles.push(tiles.find(t => parseInt(t.querySelector('.tile-inner')?.textContent) === i));
+                        tempBoardState.push(i);
+                    }
+                    tempTiles.push(tiles.find(t => t.classList.contains('empty-tile')));
+                    tempBoardState.push(0);
+
+                    tiles = tempTiles;
+                    currentBoardState = tempBoardState;
+                    emptyTileIndex = currentBoardState.indexOf(0);
+                    renderTiles(currentSize, 'initial'); // Render in solved state
+
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Small pause before shuffle animation starts
+
+                    hideLoadingOverlay(); // Hide loading after calculation, before animation
+
+                    // 4. Animate the reversed path moves
+                    for (const moveTileIndex of pathToShuffle) {
+                        const tileValueToMove = currentBoardState[moveTileIndex];
+                        const tileDOMElement = tiles.find(t => {
+                            if (t.classList.contains('empty-tile')) return false;
+                            const val = (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
+                            return val === tileValueToMove;
+                        });
+
+                        if (!tileDOMElement) {
+                            console.error("DOM element not found for tile value during complex shuffle:", tileValueToMove);
+                            continue;
+                        }
+                        const tileDOMIndex = tiles.indexOf(tileDOMElement);
+
+                        await moveTile(tileDOMIndex, currentSize, true, false); 
+                        await new Promise(resolve => setTimeout(resolve, solverAnimationSpeed / 2)); 
+                    }
+
+                } else {
+                    // Fallback for non-4x4 or 'fast' animation type
+                    shuffleTilesInstant(isInitialShuffle);
+                }
+            } catch (error) {
+                console.error("Error during complex shuffle:", error);
+                showMessageModal('Ошибка перемешивания', `Произошла ошибка при сложной анимации: ${error.message}. Перемешиваю быстро.`);
+                shuffleTilesInstant(isInitialShuffle); // Fallback to instant on error
+            } finally {
+                // Re-enable buttons
+                shuffleBtn.disabled = false;
+                applySizeBtn.disabled = false;
+                hintBtn.disabled = false;
+                solveBtn.disabled = false;
+                // strategicHintBtn.disabled = false; // REMOVED LLM: Re-enable strategic hint
+                hideLoadingOverlay();
+                applyModeSpecificStylesAndLogic(); // Apply mode styles after shuffle
             }
         }
 
@@ -1495,13 +1961,18 @@
                 const count = currentMode.getObstacleCount(currentSize);
                 let obstaclesAdded = 0;
                 const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-                for (let i = 0; i < tiles.length - 1 && obstaclesAdded < count; i++) {
-                    const tile = tiles[i];
-                    const tileValue = parseInt(tile.querySelector('.tile-inner')?.textContent);
-                    if (tileValue === checkTargetOrder[i]) {
-                        tile.classList.add('obstacle-tile');
-                        obstacleTiles.add(tile.id);
-                        tile.style.pointerEvents = 'none';
+                
+                // Get current values from the actual DOM `tiles` array to check their current positions
+                const actualTileValues = tiles.map(t => t.classList.contains('empty-tile') ? 0 : (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent)));
+
+                for (let i = 0; i < actualTileValues.length - 1 && obstaclesAdded < count; i++) {
+                    const tileValue = actualTileValues[i];
+                    // Obstacles are on tiles that are already in their correct *target* position, but not the empty tile
+                    if (tileValue !== 0 && tileValue === checkTargetOrder[i]) { 
+                        const tileElement = tiles[i]; // Get the actual DOM element at this position
+                        tileElement.classList.add('obstacle-tile');
+                        obstacleTiles.add(tileElement.id);
+                        tileElement.style.pointerEvents = 'none';
                         obstaclesAdded++;
                     }
                 }
@@ -1527,22 +1998,33 @@
             }
         }
 
-        function isSolvable(arr, size, emptyTileVal) {
+        // isSolvable: Checks if the current board state (array of numbers) is solvable
+        function isSolvable(boardArray, size, emptyTileCurrentIndex) {
             let inversions = 0;
-            const puzzleArray = arr.filter(n => !isNaN(n) && n !== emptyTileVal);
-            for (let i = 0; i < puzzleArray.length - 1; i++) {
-                for (let j = i + 1; j < puzzleArray.length; j++) {
-                    if (puzzleArray[i] > puzzleArray[j]) { inversions++; }
+            const tempArr = boardArray.filter(n => n !== 0); // Exclude the empty tile for inversion count
+
+            for (let i = 0; i < tempArr.length - 1; i++) {
+                for (let j = i + 1; j < tempArr.length; j++) {
+                    if (tempArr[i] > tempArr[j]) {
+                        inversions++;
+                    }
                 }
             }
-            const emptyTileCurrentPos = tiles.findIndex(t => t.classList.contains('empty-tile'));
-            const emptyRowFromBottom = size - Math.floor(emptyTileCurrentPos / size); 
-            if (size % 2 === 1) { return inversions % 2 === 0; }
-            else { 
-                if (emptyRowFromBottom % 2 === 1) { return inversions % 2 === 0; }
-                else { return inversions % 2 === 1; }
+
+            const emptyRow = Math.floor(emptyTileCurrentIndex / size); // 0-indexed row
+            const emptyRowFromBottom = size - emptyRow; // 1-indexed from bottom
+
+            if (size % 2 === 1) { // Odd grid size
+                return inversions % 2 === 0;
+            } else { // Even grid size
+                if (emptyRowFromBottom % 2 === 1) { // Empty tile on an odd row from bottom
+                    return inversions % 2 === 0;
+                } else { // Empty tile on an even row from bottom
+                    return inversions % 2 === 1;
+                }
             }
         }
+
 
         function isValidMove(fromIndex, toIndex, size) {
             const rowDiff = Math.abs(Math.floor(fromIndex / size) - Math.floor(toIndex / size));
@@ -1553,50 +2035,79 @@
         function checkCompletedLines(size) {
             let completedLines = 0;
             const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+            
+            // Convert DOM tiles to a simple board array for logical checks
+            const currentBoard = tiles.map(tile => {
+                if (tile.classList.contains('empty-tile')) return 0;
+                return gameMode === 'image' ? parseInt(tile.id.replace('tile-', '')) : parseInt(tile.querySelector('.tile-inner')?.textContent);
+            });
+
+            // Check rows
             for (let row = 0; row < size; row++) {
                 let isRowComplete = true;
                 for (let col = 0; col < size; col++) {
                     const index = row * size + col;
-                    if (index === emptyTileIndex) { isRowComplete = false; break; }
+                    if (currentBoard[index] === 0) { isRowComplete = false; break; }
                     const expectedNumber = checkTargetOrder[index];
-                    const tileContent = tiles[index].querySelector('.tile-inner')?.textContent;
-                    const tileValue = gameMode === 'image' ? parseInt(tiles[index].id.replace('tile-', '')) : parseInt(tileContent);
-                    if (tileValue !== expectedNumber) { isRowComplete = false; break; }
+                    if (currentBoard[index] !== expectedNumber) { isRowComplete = false; break; }
                 }
                 if (isRowComplete) completedLines++;
             }
+            // Check columns
             for (let col = 0; col < size; col++) {
                 let isColComplete = true;
                 for (let row = 0; row < size; row++) {
                     const index = row * size + col;
-                    if (index === emptyTileIndex) { isColComplete = false; break; }
+                    if (currentBoard[index] === 0) { isColComplete = false; break; }
                     const expectedNumber = checkTargetOrder[index];
-                    const tileContent = tiles[index].querySelector('.tile-inner')?.textContent;
-                    const tileValue = gameMode === 'image' ? parseInt(tiles[index].id.replace('tile-', '')) : parseInt(tileContent);
-                    if (tileValue !== expectedNumber) { isColComplete = false; break; }
+                    if (currentBoard[index] !== expectedNumber) { isColComplete = false; break; }
                 }
                 if (isColComplete) completedLines++;
             }
             return completedLines;
         }
 
-        async function moveTile(tileIndex, size) {
+        async function moveTile(tileIndex, size, isAutoSolve = false, isHintMove = false) { 
+            if (isSolvingPuzzle && !isAutoSolve && !isHintMove) return; 
             if (tileIndex === emptyTileIndex) return;
             if (gameMode === 'obstacle' && obstacleTiles.has(tiles[tileIndex].id)) { return; }
+            
+            // NEW: If it's a manual move, invalidate the current solver/hint path and hide LLM hint
+            if (!isAutoSolve && !isHintMove) {
+                if (currentSolverPath) {
+                    currentSolverPath = null;
+                    currentSolverPathStep = 0;
+                    updateSolverMessage(''); // Clear any active solver/hint messages
+                }
+                // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint on any manual move
+            }
+
             if (isValidMove(tileIndex, emptyTileIndex, size)) {
                 if (gameMode === 'time' && !isTimeModeGameStarted) {
                     isTimeModeGameStarted = true;
                     hintMessage.classList.remove('active');
                     startTimer();
                 }
+
+                // Update the DOM elements' positions
                 [tiles[emptyTileIndex], tiles[tileIndex]] = [tiles[tileIndex], tiles[emptyTileIndex]];
+                
+                // Update the logical board state as well
+                [currentBoardState[emptyTileIndex], currentBoardState[tileIndex]] = [currentBoardState[tileIndex], currentBoardState[emptyTileIndex]];
+
                 emptyTileIndex = tileIndex;
+                
                 if (gameMode === 'teleport') { await applyTeleport(); }
                 else if (gameMode === 'vortex') { await applyVortex(); }
+                
                 renderTiles(size, 'move');
+                
+                // Increment moves regardless of whether it's auto-solve or manual
                 gameStats.currentMoves++;
                 gameStats.totalMoves++;
+                
                 addScore(1);
+
                 if (gameMode === 'moves') {
                     movesLeft--;
                     if (movesLeft <= 0 && !checkWin(size)) { endGame(false, 'Ходы закончились!'); return; }
@@ -1610,25 +2121,36 @@
                 }
                 if (gameMode === 'darkness') { revealDarknessTiles(emptyTileIndex); }
                 if (gameMode === 'hidden_path') { updateHiddenPathTiles(emptyTileIndex); }
+                
                 saveStats();
                 checkAchievements();
+                
                 const completedLines = checkCompletedLines(size);
                 if (completedLines > 0) { addScore(completedLines * 10); }
+                
                 const movedTile = tiles[tileIndex];
-                const tileContent = movedTile.querySelector('.tile-inner')?.textContent;
+                const tileContent = gameMode === 'image' ? parseInt(movedTile.id.replace('tile-', '')) : parseInt(movedTile.querySelector('.tile-inner')?.textContent);
                 const expectedForHighlight = (gameMode === 'reverse') ? targetOrder[tileIndex] : (tileIndex + 1);
-                if (tileContent && parseInt(tileContent) === expectedForHighlight) {
+                
+                if (tileContent === expectedForHighlight) {
                     movedTile.classList.add('correct-position');
                     setTimeout(() => { movedTile.classList.remove('correct-position'); }, 1000);
                 }
                 highlightCorrectTiles(size); 
                 updateScore(); 
+                
                 if (isAutoHighlighting) {
                     const nextNumber = checkTilePositions();
                     if (nextNumber) { highlightNumber(nextNumber); }
                 }
-                if (checkWin(size)) { endGame(true, `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`); }
+                
+                if (checkWin(size)) { 
+                    endGame(true, `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`); 
+                    return true; 
+                }
+                return false; 
             }
+            return false; 
         }
 
         async function applyTeleport() {
@@ -1641,7 +2163,11 @@
                 const availableSpots = tiles.map((tile, index) => index).filter(index => index !== oldEmptyIndex && !tiles[index].classList.contains('obstacle-tile'));
                 if (availableSpots.length > 0) {
                     const newEmptyIndex = availableSpots[Math.floor(Math.random() * availableSpots.length)];
+                    // Update DOM
                     [tiles[oldEmptyIndex], tiles[newEmptyIndex]] = [tiles[newEmptyIndex], tiles[oldEmptyIndex]];
+                    // Update logical board state
+                    [currentBoardState[oldEmptyIndex], currentBoardState[newEmptyIndex]] = [currentBoardState[newEmptyIndex], currentBoardState[oldEmptyIndex]];
+
                     emptyTileIndex = newEmptyIndex;
                     renderTiles(currentSize);
                     await new Promise(resolve => setTimeout(resolve, 150));
@@ -1661,7 +2187,11 @@
                 const validMoves = possibleMoves.filter(index => !tiles[index].classList.contains('obstacle-tile'));
                 if (validMoves.length > 0) {
                     const randomIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    // Update DOM
                     [tiles[emptyTileIndex], tiles[randomIndex]] = [tiles[randomIndex], tiles[emptyTileIndex]];
+                     // Update logical board state
+                    [currentBoardState[emptyTileIndex], currentBoardState[randomIndex]] = [currentBoardState[randomIndex], currentBoardState[emptyTileIndex]];
+
                     emptyTileIndex = randomIndex;
                     renderTiles(currentSize);
                     await new Promise(resolve => setTimeout(resolve, 150));
@@ -1712,9 +2242,8 @@
         function checkWin(size) {
             const checkTargetOrder = (gameMode === 'reverse') ? targetOrder : Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
             for (let i = 0; i < size * size - 1; i++) {
-                const tileContent = tiles[i].querySelector('.tile-inner')?.textContent;
-                const tileValue = gameMode === 'image' ? parseInt(tiles[i].id.replace('tile-', '')) : parseInt(tileContent);
-                if (tileValue !== checkTargetOrder[i]) { return false; }
+                const tileContent = gameMode === 'image' ? parseInt(tiles[i].id.replace('tile-', '')) : parseInt(tiles[i].querySelector('.tile-inner')?.textContent);
+                if (tileContent !== checkTargetOrder[i]) { return false; }
             }
             return true;
         }
@@ -1726,8 +2255,18 @@
                 showWinAnimation(); 
             } else {
                 vibrationManager.error();
-                showMessageModal('Игра окончена!', message + '\nПопробуйте ещё раз!', () => { shuffleTiles(); });
+                showMessageModal('Игра окончена!', message + '\nПопробуйте ещё раз!', () => { shuffleTiles(true); });
             }
+            isSolvingPuzzle = false; 
+            isCalculatingPath = false; // NEW
+            solveBtn.disabled = false;
+            hintBtn.disabled = false; 
+            shuffleBtn.disabled = false; 
+            applySizeBtn.disabled = false; 
+            // strategicHintBtn.disabled = false; // REMOVED LLM: Enable strategic hint button
+            updateSolverMessage(''); // NEW: Clear messages
+            // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint
+            backgroundMusic.play().catch(e => console.error("Error playing music:", e)); // NEW: Play music on win
         }
 
         function showWinAnimation() {
@@ -1746,13 +2285,21 @@
                 if (movesTaken < currentRecord.bestMoves) currentRecord.bestMoves = movesTaken;
                 if (currentRecord.worstMoves === 0 || movesTaken > currentRecord.worstMoves) currentRecord.worstMoves = movesTaken;
             }
-            if (isAutoHighlighting) { gameStats.winsWithAutohighlight++; }
+            if (usedAutoSolveInCurrentGame) { 
+                gameStats.autoSolvedGames++;
+            } else if (usedHintInCurrentGame) { 
+                gameStats.winsWithHints++;
+            }
+
             saveStats();
             checkAchievements();
             renderStatistics();
             createConfetti();
             setTimeout(() => {
-                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`, () => { shuffleTiles(true); });
+                // Modified: Auto-shuffle after win modal closes
+                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`, () => {
+                    shuffleTiles(true);
+                });
             }, 1000);
         }
 
@@ -1810,7 +2357,7 @@
             } else { // 'move'
                 // Стандартная анимация для ходов игрока
                 tiles.forEach((tile, index) => {
-                    const row = Math.floor(index / size);
+                    const row = Math.floor(index / size); 
                     const col = index % size;
                     const targetX = col * (tileSize + tileGap);
                     const targetY = row * (tileSize + tileGap);
@@ -1819,7 +2366,7 @@
                     tile.style.opacity = 1;
                 });
             }
-            highlightCorrectTiles(currentSize);
+            highlightCorrectTiles(size);
         }
 
         function highlightCorrectTiles(size) {
@@ -1860,11 +2407,32 @@
             const statsToSave = { ...gameStats, playedSizes: Array.from(gameStats.playedSizes), colorsChanged: Array.from(gameStats.colorsChanged), styleChanges: Array.from(gameStats.styleChanges), modesTried: Array.from(gameStats.modesTried) };
             localStorage.setItem('gameStats_v9', JSON.stringify(statsToSave)); 
             localStorage.setItem('completedAchievements_v9', JSON.stringify(completedAchievements)); 
+            localStorage.setItem('solverMode_v1', solverMode); 
+            localStorage.setItem('solverAnimationSpeed_v1', solverAnimationSpeed); 
+            localStorage.setItem('customFontLoaded_v1', customFontLoaded); // NEW
+            localStorage.setItem('customFontUrl_v1', customFontUrl); // NEW
+            localStorage.setItem('customFontApplyScope_v1', customFontApplyScope); // NEW
+            localStorage.setItem('musicPlaylistData_v1', JSON.stringify(musicPlaylistData)); // NEW
+            localStorage.setItem('currentMusicIndex_v1', currentMusicIndex); // NEW
+            localStorage.setItem('musicVolume_v1', backgroundMusic.volume); // NEW
+            localStorage.setItem('showSolverModal_v1', showSolverModal); // NEW
+            localStorage.setItem('shuffleAnimationType_v1', shuffleAnimationType); // NEW Shuffle Anim
         }
 
         function loadStats() {
             const savedStats = localStorage.getItem('gameStats_v9');
             const savedAchievements = localStorage.getItem('completedAchievements_v9');
+            const savedSolverMode = localStorage.getItem('solverMode_v1'); 
+            const savedSolverAnimationSpeed = localStorage.getItem('solverAnimationSpeed_v1'); 
+            const savedCustomFontLoaded = localStorage.getItem('customFontLoaded_v1'); // NEW
+            const savedCustomFontUrl = localStorage.getItem('customFontUrl_v1'); // NEW
+            const savedCustomFontApplyScope = localStorage.getItem('customFontApplyScope_v1'); // NEW
+            const savedMusicPlaylistData = localStorage.getItem('musicPlaylistData_v1'); // NEW
+            const savedCurrentMusicIndex = localStorage.getItem('currentMusicIndex_v1'); // NEW
+            const savedMusicVolume = localStorage.getItem('musicVolume_v1'); // NEW
+            const savedShowSolverModal = localStorage.getItem('showSolverModal_v1'); // NEW
+            const savedShuffleAnimationType = localStorage.getItem('shuffleAnimationType_v1'); // NEW Shuffle Anim
+
             initializeStats(); 
             if (savedStats) {
                 const parsedStats = JSON.parse(savedStats);
@@ -1886,6 +2454,17 @@
                 }
             }
             if (savedAchievements) { completedAchievements = JSON.parse(savedAchievements); }
+            if (savedSolverMode) { solverMode = savedSolverMode; } 
+            if (savedSolverAnimationSpeed) { solverAnimationSpeed = parseInt(savedSolverAnimationSpeed); } 
+            if (savedCustomFontLoaded) { customFontLoaded = savedCustomFontLoaded === 'true'; } // NEW
+            if (savedCustomFontUrl) { customFontUrl = savedCustomFontUrl; } // NEW
+            if (savedCustomFontApplyScope) { customFontApplyScope = savedCustomFontApplyScope; } // NEW
+            if (savedMusicPlaylistData) { musicPlaylistData = JSON.parse(savedMusicPlaylistData); } // NEW
+            if (savedCurrentMusicIndex) { currentMusicIndex = parseInt(savedCurrentMusicIndex); } // NEW
+            if (savedMusicVolume) { backgroundMusic.volume = parseFloat(savedMusicVolume); } // NEW
+            if (savedShowSolverModal) { showSolverModal = savedShowSolverModal === 'true'; } // NEW
+            if (savedShuffleAnimationType) { shuffleAnimationType = savedShuffleAnimationType; } // NEW Shuffle Anim
+
             calculateAchievementScore();
             renderAchievements();
             renderStatistics();
@@ -1937,7 +2516,9 @@
         }
         
         function renderStatistics() {
-            statsGrid.innerHTML = `<div class="stats-card"><i class="fas fa-gamepad stats-icon"></i><div class="stats-value">${gameStats.totalGamesWon}</div><div class="stats-label">Собрано игр</div></div><div class="stats-card"><i class="fas fa-arrows-alt-h stats-icon"></i><div class="stats-value">${gameStats.totalMoves}</div><div class="stats-label">Передвинуто плиток</div></div><div class="stats-card"><i class="fas fa-coins stats-icon"></i><div class="stats-value">${gameStats.totalScore}</div><div class="stats-label">Очков получено</div></div><div class="stats-card"><i class="fas fa-trophy stats-icon"></i><div class="stats-value">${gameStats.achievementScore}</div><div class="stats-label">Очки за достижения</div></div><div class="stats-list-card"><h3>Статистика по режимам и размерам:</h3><ul class="stats-list" id="statsModeSizeList"></ul></div>`;
+            statsGrid.innerHTML = `<div class="stats-card"><i class="fas fa-gamepad stats-icon"></i><div class="stats-value">${gameStats.totalGamesWon}</div><div class="stats-label">Собрано игр</div></div><div class="stats-card"><i class="fas fa-arrows-alt-h stats-icon"></i><div class="stats-value">${gameStats.totalMoves}</div><div class="stats-label">Передвинуто плиток</div></div><div class="stats-card"><i class="fas fa-coins stats-icon"></i><div class="stats-value">${gameStats.totalScore}</div><div class="stats-label">Очков получено</div></div><div class="stats-card"><i class="fas fa-trophy stats-icon"></i><div class="stats-value">${gameStats.achievementScore}</div><div class="stats-label">Очки за достижения</div></div>
+            <div class="stats-card"><i class="fas fa-lightbulb stats-icon"></i><div class="stats-value">${gameStats.hintsUsed}</div><div class="stats-label">Использовано подсказок</div></div><div class="stats-card"><i class="fas fa-magic stats-icon"></i><div class="stats-value">${gameStats.autoSolvedGames}</div><div class="stats-label">Авто-решено игр</div></div>
+            <div class="stats-list-card"><h3>Статистика по режимам и размерам:</h3><ul class="stats-list" id="statsModeSizeList"></ul></div>`;
             const modeSizeList = document.getElementById('statsModeSizeList');
             gameModes.forEach(mode => {
                 const modeLi = document.createElement('li');
@@ -1956,7 +2537,7 @@
                         let statsHtml = `<span>Поле ${size}x${size}:</span><span>Игр: ${record.gamesPlayed}`;
                         if (record.bestMoves !== Infinity) { statsHtml += `, Ходы: ${record.bestMoves}`; if (record.worstMoves !== 0 && record.worstMoves !== Infinity && record.worstMoves !== record.bestMoves) { statsHtml += ` (худш: ${record.worstMoves})`; } }
                         if (record.bestTime !== Infinity) {
-                            const bestMin = Math.floor(record.bestTime / 60); const bestSec = record.bestTime % 60; const worstMin = Math.floor(record.worstTime / 60); const worstSec = record.worstTime % 60;
+                            const bestMin = Math.floor(record.bestTime / 60); const bestSec = record.bestTime % 60; const worstMin = Math.floor(record.worstTime / 60); const worstSec = Math.floor(record.worstTime % 60);
                             statsHtml += `, Время: ${bestMin.toString().padStart(2, '0')}:${bestSec.toString().padStart(2, '0')}`;
                             if (record.worstTime !== 0 && record.worstTime !== Infinity && record.worstTime !== record.bestTime) { statsHtml += ` (худш: ${worstMin.toString().padStart(2, '0')}:${worstSec.toString().padStart(2, '0')})`; }
                         }
@@ -2052,7 +2633,7 @@
                     tile.style.backgroundImage = ''; tile.style.backgroundSize = ''; tile.style.backgroundPosition = ''; return;
                 }
                 const originalNumber = parseInt(tile.id.replace('tile-', ''));
-                const originalIndex = originalNumber - 1;
+                const originalIndex = originalNumber - 1; // Assuming original number corresponds to its sorted position
                 const col = originalIndex % currentSize;
                 const row = Math.floor(originalIndex / currentSize);
                 const sx = col * tileWidth;
@@ -2081,9 +2662,331 @@
             };
             modalCloseBtn.addEventListener('click', closeHandler);
         }
+
+        // NEW: Function to update solver messages (modal or header)
+        function updateSolverMessage(message, title = 'Решение головоломки...') {
+            if (showSolverModal) {
+                document.getElementById('loadingTitle').textContent = title;
+                document.getElementById('loadingMessage').textContent = message;
+                loadingModal.classList.add('active');
+                solverMessageDisplay.style.display = 'none';
+            } else {
+                loadingModal.classList.remove('active');
+                solverMessageDisplay.style.display = 'block';
+                solverMessageDisplay.innerHTML = `<i class="fas fa-info-circle"></i> <span>${message}</span>`;
+            }
+        }
+
+        // NEW: Function to hide loading overlay
+        function hideLoadingOverlay() {
+            loadingModal.classList.remove('active');
+            solverMessageDisplay.style.display = 'none';
+        }
         
+        // Helper to convert 1D index to 2D coordinates
+        function getCoords(index, size) {
+            return { row: Math.floor(index / size), col: index % size };
+        }
+
+        // Helper to convert 2D coordinates to 1D index
+        function getIndex(row, col, size) {
+            return row * size + col;
+        }
+
+        // Manhattan Distance for A* heuristic
+        function manhattanDistance(board, size, goalBoard) {
+            let distance = 0;
+            for (let i = 0; i < board.length; i++) {
+                const value = board[i];
+                if (value === 0) continue; // Empty tile doesn't contribute to distance
+
+                const currentRow = Math.floor(i / size);
+                const currentCol = i % size;
+
+                const goalIndex = goalBoard.indexOf(value);
+                if (goalIndex === -1) continue; 
+
+                const goalRow = Math.floor(goalIndex / size);
+                const goalCol = goalIndex % size;
+
+                distance += Math.abs(currentRow - goalRow) + Math.abs(currentCol - goalCol);
+            }
+            return distance;
+        }
+
+        // A* search to find path for specific goals, respecting locked tiles
+        async function findPathToGoal(startBoard, size, targetGoals, lockedTileValues) {
+            const openList = []; // Priority Queue: [fScore, gScore, boardState, emptyIndex, pathOfMoves (indices of tiles moved)]
+            const closedList = new Set(); // Stores stringified board states
+
+            const startEmptyIndex = startBoard.indexOf(0);
+
+            // Heuristic function for the current phase's goals
+            const heuristic = (boardState) => {
+                let h = 0;
+                for (const tileValStr in targetGoals) {
+                    const tileVal = parseInt(tileValStr);
+                    const goalPos = targetGoals[tileValStr]; // {row, col}
+                    
+                    const currentPosIndex = boardState.indexOf(tileVal);
+                    if (currentPosIndex === -1) { 
+                        continue;
+                    }
+
+                    const currentRow = Math.floor(currentPosIndex / size);
+                    const currentCol = currentPosIndex % size;
+
+                    h += Math.abs(currentRow - goalPos.row) + Math.abs(currentCol - goalPos.col);
+                }
+                return h;
+            };
+
+            const initialH = heuristic(startBoard);
+            openList.push({ f: initialH, g: 0, board: startBoard, empty: startEmptyIndex, path: [] });
+
+            let iterationCount = 0;
+            const MAX_ITERATIONS = 500000; // Increased iterations for more complex paths
+
+            while (openList.length > 0 && iterationCount < MAX_ITERATIONS) {
+                // Manual min-heap extraction
+                let minF = Infinity;
+                let minIndex = -1;
+                for (let i = 0; i < openList.length; i++) {
+                    if (openList[i].f < minF) {
+                        minF = openList[i].f;
+                        minIndex = i;
+                    }
+                }
+                const { f, g, board, empty, path } = openList.splice(minIndex, 1)[0];
+                iterationCount++;
+
+                const boardString = JSON.stringify(board);
+                if (closedList.has(boardString)) continue;
+                closedList.add(boardString);
+
+                // Check if current board state satisfies all targets for THIS phase
+                let allGoalsMet = true;
+                for (const tileValStr in targetGoals) {
+                    const tileVal = parseInt(tileValStr);
+                    const goalPos = targetGoals[tileValStr];
+                    const currentTilePosIndex = board.indexOf(tileVal);
+                    
+                    if (currentTilePosIndex === -1 || Math.floor(currentTilePosIndex / size) !== goalPos.row || (currentTilePosIndex % size) !== goalPos.col) {
+                        allGoalsMet = false;
+                        break;
+                    }
+                }
+                if (allGoalsMet) {
+                    return path; // Path found for this phase's goals
+                }
+
+                const emptyRow = Math.floor(empty / size);
+                const emptyCol = empty % size;
+
+                const moves = [
+                    { dr: 0, dc: 1 }, { dr: 0, dc: -1 }, // Right, Left
+                    { dr: 1, dc: 0 }, { dr: -1, dc: 0 }  // Down, Up
+                ];
+
+                for (const move of moves) {
+                    const newRow = emptyRow + move.dr;
+                    const newCol = emptyCol + move.dc;
+
+                    if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
+                        const neighborIdx = newRow * size + newCol;
+                        const neighborValue = board[neighborIdx];
+
+                        // IMPORTANT: Do not move locked tiles
+                        if (lockedTileValues.includes(neighborValue)) {
+                            continue;
+                        }
+
+                        const nextBoard = [...board];
+                        [nextBoard[empty], nextBoard[neighborIdx]] = [nextBoard[neighborIdx], nextBoard[empty]]; // Swap
+                        const nextEmpty = neighborIdx;
+
+                        const nextBoardStr = JSON.stringify(nextBoard);
+                        if (closedList.has(nextBoardStr)) continue;
+
+                        const nextG = g + 1;
+                        const nextH = heuristic(nextBoard);
+                        const nextF = nextG + nextH;
+
+                        // Check if this new state is already in openList with a better gScore
+                        let foundInOpen = false;
+                        for (let i = 0; i < openList.length; i++) {
+                            if (JSON.stringify(openList[i].board) === nextBoardStr && openList[i].g <= nextG) {
+                                foundInOpen = true;
+                                break;
+                            }
+                        }
+                        if (foundInOpen) continue;
+
+                        openList.push({ f: nextF, g: nextG, board: nextBoard, empty: nextEmpty, path: [...path, neighborIdx] });
+                    }
+                }
+            }
+            return null; // Path not found or max iterations reached
+        }
+
+        // Helper to animate a sequence of moves and update the game state
+        async function animateMoves(path, isHint = false) {
+            for (const targetTileIndexToMove of path) {
+                // Find the actual tile value at `targetTileIndexToMove` in the current `currentBoardState`
+                const tileValueToMove = currentBoardState[targetTileIndexToMove];
+                
+                // Find the DOM element corresponding to this value
+                const tileDOMElement = tiles.find(t => {
+                    if (t.classList.contains('empty-tile')) return false;
+                    const val = (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
+                    return val === tileValueToMove;
+                });
+
+                if (!tileDOMElement) {
+                    console.error("DOM element not found for tile value:", tileValueToMove);
+                    continue;
+                }
+                const tileDOMIndex = tiles.indexOf(tileDOMElement);
+
+                // Perform the move on the DOM and update internal state
+                await moveTile(tileDOMIndex, currentSize, true, isHint); // Use the isAutoSolve, isHintMove flag
+                
+                await new Promise(resolve => setTimeout(resolve, solverAnimationSpeed)); // Use dynamic speed
+            }
+        }
+
+        // Main function for solving the puzzle step-by-step or instantly
+        async function solveEntirePuzzle(initialBoard, size, isHintCalculation = false) {
+            if (isCalculatingPath) return; // Prevent re-entry
+            isCalculatingPath = true;
+            isSolvingPuzzle = true; // Block manual moves during calculation/animation
+            solveBtn.disabled = true;
+            hintBtn.disabled = true;
+            shuffleBtn.disabled = true; 
+            applySizeBtn.disabled = true; 
+            // strategicHintBtn.disabled = true; // REMOVED LLM: Disable strategic hint button
+            
+            let currentPuzzleState = [...initialBoard]; 
+            let locked = [];
+
+            try {
+                if (currentSize !== 4) {
+                     throw new Error('Автоматическое решение пока доступно только для поля 4x4. Работает над другими размерами!');
+                }
+
+                const phases = [
+                    { name: 'плитку 1', targetGoals: { 1: {row: 0, col: 0} }, lock: [1], message: 'Просчитываю плитку 1...' },
+                    { name: 'плитку 2', targetGoals: { 2: {row: 0, col: 1} }, lock: [2], message: 'Просчитываю плитку 2...' },
+                    { name: 'специальные плитки 3 и 4 (временно)', targetGoals: { 4: {row: 0, col: 2}, 3: {row: 1, col: 2} }, lock: [], message: 'Просчитываю специальные плитки 3 и 4...' },
+                    { name: 'плитки 3 и 4 (финально)', targetGoals: { 3: {row: 0, col: 2}, 4: {row: 0, col: 3} }, lock: [3, 4], message: 'Завершаю первый ряд...' },
+                    { name: 'пустую ячейку для второго ряда', targetGoals: { 0: {row: 1, col: 3} }, lock: [], message: 'Перемещаю пустую ячейку для второго ряда...' },
+                    { name: 'плитку 5', targetGoals: { 5: {row: 1, col: 0} }, lock: [5], message: 'Просчитываю плитку 5...' },
+                    { name: 'плитку 6', targetGoals: { 6: {row: 1, col: 1} }, lock: [6], message: 'Просчитываю плитку 6...' },
+                    { name: 'специальные плитки 7 и 8 (временно)', targetGoals: { 8: {row: 1, col: 2}, 7: {row: 2, col: 2} }, lock: [], message: 'Просчитываю специальные плитки 7 и 8...' },
+                    { name: 'плитки 7 и 8 (финально)', targetGoals: { 7: {row: 1, col: 2}, 8: {row: 1, col: 3} }, lock: [7, 8], message: 'Завершаю второй ряд...' },
+                    { name: 'пустую ячейку для третьей строки', targetGoals: { 0: {row: 2, col: 0} }, lock: [], message: 'Перемещаю пустую ячейку для третьей строки...' },
+                    { name: 'плитки 9 и 13', targetGoals: { 9: {row: 2, col: 0}, 13: {row: 3, col: 0}, 0: {row: 3, col: 1} }, lock: [9, 13], message: 'Просчитываю плитки 9 и 13...' },
+                    { name: 'плитки 10 и 14', targetGoals: { 10: {row: 2, col: 1}, 14: {row: 3, col: 1}, 0: {row: 3, col: 2} }, lock: [10, 14], message: 'Просчитываю плитки 10 и 14...' },
+                    { name: 'последний блок 2x2', targetGoals: {11: {row: 2, col: 2}, 12: {row: 2, col: 3}, 15: {row: 3, col: 2}, 0: {row: 3, col: 3}}, lock: [], message: 'Завершаю головоломку...' }
+                ];
+
+                if (solverMode === 'instant' || isHintCalculation) { // Hint also calculates full path instantly
+                    let fullSolutionPath = [];
+                    for (const phase of phases) {
+                        updateSolverMessage(phase.message);
+                        const phasePath = await findPathToGoal(currentPuzzleState, currentSize, phase.targetGoals, locked);
+                        if (!phasePath) throw new Error(`Не удалось найти путь для фазы: ${phase.name}.`);
+                        
+                        // Simulate moves on the currentPuzzleState for the next phase's calculation
+                        for (const targetTileIndexToMove of phasePath) {
+                            const emptyPos = currentPuzzleState.indexOf(0);
+                            const tileValue = currentPuzzleState[targetTileIndexToMove];
+                            const tilePos = targetTileIndexToMove;
+                            [currentPuzzleState[emptyPos], currentPuzzleState[tilePos]] = [currentPuzzleState[tilePos], currentPuzzleState[emptyPos]];
+                        }
+                        fullSolutionPath = fullSolutionPath.concat(phasePath);
+                        locked = locked.concat(phase.lock);
+                    }
+                    currentSolverPath = fullSolutionPath; // Store the full path
+                    currentSolverPathStep = 0; // Reset step counter
+                    hideLoadingOverlay(); // Hide loading after all calculations are done
+
+                    if (isHintCalculation) {
+                        // For hint, only move the first tile and then return
+                        if (currentSolverPath.length > 0) {
+                            await animateMoves([currentSolverPath[currentSolverPathStep]], true); // Move first tile
+                            currentSolverPathStep++;
+                        } else {
+                            showMessageModal('Подсказка', 'Головоломка уже решена или нет доступных ходов.');
+                        }
+                    } else {
+                        // For full solve, animate all moves
+                        for (const moveTileIndex of currentSolverPath) {
+                            if (checkWin(currentSize)) break;
+                            await animateMoves([moveTileIndex], false);
+                        }
+                    }
+
+                } else { // 'step-by-step' mode
+                    for (const phase of phases) {
+                        updateSolverMessage(phase.message);
+                        const phasePath = await findPathToGoal(currentPuzzleState, currentSize, phase.targetGoals, locked);
+                        if (!phasePath) throw new Error(`Не удалось найти путь для фазы: ${phase.name}.`);
+                        
+                        // NEW: Simulate moves on the currentPuzzleState for the next phase's calculation
+                        // This is crucial for the "background calculation" effect.
+                        for (const targetTileIndexToMove of phasePath) {
+                            const emptyPos = currentPuzzleState.indexOf(0);
+                            const tileValue = currentPuzzleState[targetTileIndexToMove];
+                            const tilePos = targetTileIndexToMove;
+                            [currentPuzzleState[emptyPos], currentPuzzleState[tilePos]] = [currentPuzzleState[tilePos], currentPuzzleState[emptyPos]];
+                        }
+                        locked = locked.concat(phase.lock);
+
+                        // NEW: Start animation, and then immediately start calculating the next phase.
+                        hideLoadingOverlay(); // Hide during animation
+                        await animateMoves(phasePath);
+                        
+                        // After animation, the actual board state is updated by animateMoves.
+                        // The `currentPuzzleState` for the *next* phase is already updated above.
+                        // So, we just continue the loop.
+                    }
+                }
+
+                if (checkWin(currentSize)) {
+                     endGame(true, 'Головоломка полностью решена алгоритмом!');
+                } else {
+                     showMessageModal('Ошибка решения', 'Алгоритм не смог полностью решить головоломку. Возможно, проблема в реализации или состояние поля стало нерешаемым.');
+                }
+
+            } catch (error) {
+                showMessageModal('Ошибка решения', `Произошла ошибка при решении: ${error.message}`);
+                console.error("Solver error:", error);
+            } finally {
+                hideLoadingOverlay();
+                isCalculatingPath = false;
+                isSolvingPuzzle = false;
+                solveBtn.disabled = false;
+                hintBtn.disabled = false;
+                shuffleBtn.disabled = false;
+                applySizeBtn.disabled = false;
+                // strategicHintBtn.disabled = false; // REMOVED LLM: Enable strategic hint button
+            }
+        }
+        
+        // Helper function to get goal targets for the A* solver
+        function getGoalTargets(size) {
+            const goals = {};
+            for (let i = 1; i <= size * size - 1; i++) {
+                goals[i] = { row: Math.floor((i - 1) / size), col: (i - 1) % size };
+            }
+            goals[0] = { row: size - 1, col: size - 1 }; // Empty tile goal at bottom-right
+            return goals;
+        }
+
         // Event Handlers
         gameField.addEventListener('click', (e) => {
+            if (isSolvingPuzzle) return; 
             const tile = e.target.closest('.tile');
             if (tile) {
                 vibrationManager.click();
@@ -2095,6 +2998,7 @@
         // ✨ ИСПРАВЛЕНО: Восстановлена логика обработки свайпов
         let swipeStartX, swipeStartY;
         gameField.addEventListener('touchstart', (e) => {
+            if (isSolvingPuzzle) return; 
             if (e.touches.length === 1) {
                 swipeStartX = e.touches[0].clientX;
                 swipeStartY = e.touches[0].clientY;
@@ -2102,10 +3006,12 @@
         }, { passive: true });
 
         gameField.addEventListener('touchmove', (e) => {
+            if (isSolvingPuzzle) return; 
             e.preventDefault();
         }, { passive: false });
 
         gameField.addEventListener('touchend', (e) => {
+            if (isSolvingPuzzle) return; 
             if (e.changedTouches.length === 1) {
                 const swipeEndX = e.changedTouches[0].clientX;
                 const swipeEndY = e.changedTouches[0].clientY;
@@ -2113,7 +3019,7 @@
                 const deltaX = swipeEndX - swipeStartX;
                 const deltaY = swipeEndY - swipeStartY;
 
-                if (Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) return; // Игнорируем короткие движения (тапы)
+                if (Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) return; 
 
                 let tileToMoveIndex = -1;
                 const emptyTileRow = Math.floor(emptyTileIndex / currentSize);
@@ -2171,31 +3077,454 @@
             if (size >= 2 && size <= 20) {
                 currentSize = size;
                 createGame(size);
-                shuffleTiles(true); // Используем начальную анимацию
+                shuffleTiles(true); 
             }
         });
 
-        shuffleBtn.addEventListener('click', () => shuffleTiles(false)); // Используем анимацию перемешивания
+        shuffleBtn.addEventListener('click', () => shuffleTiles(false)); 
         autoHighlightBtn.addEventListener('click', toggleAutoHighlight);
         vibrationToggleBtn.addEventListener('click', () => { vibrationManager.toggle(); });
         
+        // NEW: Show Solver Modal Toggle
+        function updateShowSolverModalButton() {
+            if (showSolverModal) {
+                showSolverModalToggleBtn.innerHTML = `<i class="fas fa-check"></i> Включено`;
+                showSolverModalToggleBtn.classList.remove('btn-danger');
+                showSolverModalToggleBtn.classList.add('btn-success');
+            } else {
+                showSolverModalToggleBtn.innerHTML = `<i class="fas fa-times"></i> Выключено`;
+                showSolverModalToggleBtn.classList.remove('btn-success');
+                showSolverModalToggleBtn.classList.add('btn-danger');
+            }
+        }
+        showSolverModalToggleBtn.addEventListener('click', () => {
+            showSolverModal = !showSolverModal;
+            updateShowSolverModalButton();
+            saveStats();
+            vibrationManager.click();
+            if (!showSolverModal && loadingModal.classList.contains('active')) {
+                // If modal was active and now disabled, move message to header
+                const title = document.getElementById('loadingTitle').textContent;
+                const message = document.getElementById('loadingMessage').textContent;
+                updateSolverMessage(message, title);
+            } else if (showSolverModal && solverMessageDisplay.style.display !== 'none') {
+                // If header message was active and now modal enabled, hide header message
+                hideLoadingOverlay();
+            }
+        });
+
+        // Hint button logic
+        hintBtn.addEventListener('click', async () => {
+            if (isCalculatingPath) {
+                updateSolverMessage('Подсказка уже просчитывается...');
+                return;
+            }
+            if (checkWin(currentSize)) {
+                showMessageModal('Подсказка', 'Головоломка уже решена!');
+                return;
+            }
+
+            vibrationManager.hint();
+            gameStats.hintsUsed++;
+            usedHintInCurrentGame = true; 
+            saveStats();
+            checkAchievements();
+            
+            hintWarningMessage.classList.add('active'); // Show hint warning
+            setTimeout(() => { hintWarningMessage.classList.remove('active'); }, 5000); // Hide after 5 seconds
+
+            if (!currentSolverPath || currentSolverPathStep >= currentSolverPath.length) {
+                // Calculate new path if none exists or path is exhausted
+                const currentBoard = tiles.map(t => {
+                    if (t.classList.contains('empty-tile')) return 0;
+                    return gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent);
+                });
+                await solveEntirePuzzle(currentBoard, currentSize, true); // Calculate full path for hint
+            } else {
+                // Move next tile from existing path
+                await animateMoves([currentSolverPath[currentSolverPathStep]], true);
+                currentSolverPathStep++;
+            }
+        });
+
+        // Solve button logic
+        solveBtn.addEventListener('click', async () => {
+            if (isCalculatingPath) {
+                updateSolverMessage('Головоломка уже решается!');
+                return;
+            }
+            if (checkWin(currentSize)) {
+                showMessageModal('Уведомление', 'Головоломка уже решена!');
+                return;
+            }
+
+            vibrationManager.solve();
+            usedAutoSolveInCurrentGame = true; 
+
+            const currentBoard = tiles.map(t => {
+                if (t.classList.contains('empty-tile')) return 0;
+                return gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent);
+            });
+
+            await solveEntirePuzzle(currentBoard, currentSize, false);
+        });
+
+        // Solver Mode Toggle Button Logic
+        function updateSolverModeButton() {
+            if (solverMode === 'step-by-step') {
+                solverModeToggleBtn.innerHTML = `<i class="fas fa-sync-alt"></i> Поэтапный`;
+                solverModeToggleBtn.classList.remove('btn-warning');
+                solverModeToggleBtn.classList.add('btn-info');
+                solverModeWarning.classList.add('active'); // Show warning
+            } else {
+                solverModeToggleBtn.innerHTML = `<i class="fas fa-bolt"></i> Моментальный`;
+                solverModeToggleBtn.classList.remove('btn-info');
+                solverModeToggleBtn.classList.add('btn-warning');
+                solverModeWarning.classList.remove('active'); // Hide warning
+            }
+        }
+
+        solverModeToggleBtn.addEventListener('click', () => {
+            solverMode = (solverMode === 'step-by-step') ? 'instant' : 'step-by-step';
+            updateSolverModeButton();
+            saveStats(); // Save the new setting
+            vibrationManager.click();
+        });
+
+        // Solver Speed Modal Logic
+        function updateSolverSpeedDisplay() {
+            solverSpeedDisplay.textContent = `${solverAnimationSpeed} мс`;
+        }
+
+        // Function to run the demo animation
+        function runDemoAnimation() {
+            const animationDuration = parseInt(demoSpeedSlider.value); // Get current demo speed
+
+            // Reset to initial positions for a clean restart of animation
+            demoTile1.style.transition = 'none'; // Disable transition for reset
+            demoEmptyTile.style.transition = 'none'; // Disable transition for reset
+            
+            // Initial position: Tile 1 at bottom-right (index 3), Empty at top-left (index 0)
+            const tileSizeInDemo = 50;
+            const tileGapInDemo = 5;
+            demoTile1.style.transform = `translate(${1 * (tileSizeInDemo + tileGapInDemo)}px, ${1 * (tileSizeInDemo + tileGapInDemo)}px)`;
+            demoEmptyTile.style.transform = `translate(${0 * (tileSizeInDemo + tileGapInDemo)}px, ${0 * (tileSizeInDemo + tileGapInDemo)}px)`;
+
+            // Force reflow to apply reset instantly
+            void demoTile1.offsetWidth;
+            void demoEmptyTile.offsetWidth;
+
+            // Set transition duration for animation
+            demoTile1.style.transition = `transform ${animationDuration}ms linear`;
+            demoEmptyTile.style.transition = `transform ${animationDuration}ms linear`;
+
+            // Animate to target positions: Tile 1 to top-left, Empty to bottom-right
+            demoTile1.style.transform = `translate(${0 * (tileSizeInDemo + tileGapInDemo)}px, ${0 * (tileSizeInDemo + tileGapInDemo)}px)`;
+            demoEmptyTile.style.transform = `translate(${1 * (tileSizeInDemo + tileGapInDemo)}px, ${1 * (tileSizeInDemo + tileGapInDemo)}px)`;
+
+            // Reset positions after animation completes
+            setTimeout(() => {
+                demoTile1.style.transition = 'none';
+                demoEmptyTile.style.transition = 'none';
+                demoTile1.style.transform = `translate(${1 * (tileSizeInDemo + tileGapInDemo)}px, ${1 * (tileSizeInDemo + tileGapInDemo)}px)`;
+                demoEmptyTile.style.transform = `translate(${0 * (tileSizeInDemo + tileGapInDemo)}px, ${0 * (tileSizeInDemo + tileGapInDemo)}px)`;
+            }, animationDuration);
+        }
+
+        changeSolverSpeedBtn.addEventListener('click', () => {
+            solverSpeedModal.classList.add('active');
+            // Set demo slider to current solverAnimationSpeed
+            demoSpeedSlider.value = solverAnimationSpeed;
+            demoSpeedValue.textContent = `${solverAnimationSpeed} мс`;
+            runDemoAnimation(); // Start demo animation
+        });
+
+        demoSpeedSlider.addEventListener('input', () => {
+            demoSpeedValue.textContent = `${demoSpeedSlider.value} мс`;
+            runDemoAnimation(); // Rerun demo animation with new speed
+        });
+
+        applySolverSpeedBtn.addEventListener('click', () => {
+            solverAnimationSpeed = parseInt(demoSpeedSlider.value);
+            updateSolverSpeedDisplay();
+            saveStats(); // Save the new setting
+            solverSpeedModal.classList.remove('active');
+        });
+
+        closeSolverSpeedModalBtn.addEventListener('click', () => {
+            solverSpeedModal.classList.remove('active');
+        });
+
+        // NEW: Font Loading Logic
+        fontUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'font/ttf') {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    customFontUrl = event.target.result;
+                    fontOptions.style.display = 'block'; // Show options after file is loaded
+                    
+                    // Update the @font-face rule's src in the dedicated style element
+                    if (customFontStyleElement) {
+                        customFontStyleElement.textContent = `@font-face { font-family: 'CustomFont'; src: url("${customFontUrl}"); }`;
+                    } else {
+                        // Fallback, though customFontStyleElement should be initialized in init()
+                        console.warn("customFontStyleElement not found, creating a new style element for font.");
+                        customFontStyleElement = document.createElement('style');
+                        customFontStyleElement.id = 'custom-font-style';
+                        customFontStyleElement.textContent = `@font-face { font-family: 'CustomFont'; src: url("${customFontUrl}"); }`;
+                        document.head.appendChild(customFontStyleElement);
+                    }
+
+                    const font = new FontFace('CustomFont', `url("${customFontUrl}")`);
+                    font.load().then(() => {
+                        document.fonts.add(font);
+                        customFontLoaded = true;
+                        console.log('Font loaded:', file.name);
+                        // Optionally apply to tiles for a quick preview
+                        tiles.forEach(tile => tile.classList.add('custom-font-tile'));
+                        document.body.classList.remove('custom-font-all');
+                    }).catch(error => {
+                        console.error('Error loading font:', error);
+                        showMessageModal('Ошибка', 'Не удалось загрузить шрифт. Убедитесь, что это действительный файл .ttf.');
+                        customFontLoaded = false;
+                        fontOptions.style.display = 'none';
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                showMessageModal('Ошибка', 'Пожалуйста, выберите файл шрифта в формате .ttf.');
+                fontOptions.style.display = 'none';
+            }
+        });
+
+        applyFontBtn.addEventListener('click', () => {
+            if (!customFontLoaded) {
+                showMessageModal('Ошибка', 'Сначала загрузите шрифт.');
+                return;
+            }
+            if (fontApplyTilesRadio.checked) {
+                customFontApplyScope = 'tiles';
+                applyCustomFont();
+            } else if (fontApplyAllRadio.checked) {
+                customFontApplyScope = 'all';
+                applyCustomFont();
+            } else {
+                showMessageModal('Ошибка', 'Выберите, куда применить шрифт.');
+                return;
+            }
+            saveStats();
+            showMessageModal('Успех', 'Шрифт применен!');
+        });
+
+        resetFontBtn.addEventListener('click', () => {
+            customFontLoaded = false;
+            customFontApplyScope = 'none';
+            customFontUrl = ''; // Clear the URL
+            // Reset the @font-face rule's src in the dedicated style element
+            if (customFontStyleElement) {
+                customFontStyleElement.textContent = `@font-face { font-family: 'CustomFont'; src: url(''); }`; // Reset to empty
+            }
+            applyCustomFont(); // Remove custom font styles
+            fontOptions.style.display = 'none';
+            fontUploadInput.value = ''; // Clear file input
+            saveStats();
+            showMessageModal('Сброс', 'Шрифт сброшен до стандартного.');
+        });
+
+        function applyCustomFont() {
+            // Remove all custom font classes first
+            document.body.classList.remove('custom-font-all');
+            tiles.forEach(tile => tile.classList.remove('custom-font-tile'));
+
+            if (customFontLoaded) {
+                if (customFontApplyScope === 'tiles') {
+                    tiles.forEach(tile => tile.classList.add('custom-font-tile'));
+                } else if (customFontApplyScope === 'all') {
+                    document.body.classList.add('custom-font-all');
+                }
+            }
+        }
+
+        // NEW: Music Player Logic
+        function renderMusicPlaylist() {
+            musicPlaylist.innerHTML = '';
+            musicPlaylistData.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.className = 'font-list-item'; // Reusing style
+                li.textContent = song.name;
+                li.dataset.index = index;
+                if (index === currentMusicIndex) {
+                    li.style.fontWeight = 'bold';
+                    li.style.color = 'var(--primary-color)'; // Corrected CSS variable usage
+                }
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Удалить';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent li click
+                    deleteSong(index);
+                });
+                li.appendChild(deleteBtn);
+                li.addEventListener('click', () => {
+                    playSong(index);
+                });
+                musicPlaylist.appendChild(li);
+            });
+        }
+
+        function playSong(index) {
+            if (index < 0 || index >= musicPlaylistData.length) return;
+            currentMusicIndex = index;
+            backgroundMusic.src = musicPlaylistData[index].url;
+            backgroundMusic.play().catch(e => console.error("Error playing music:", e));
+            renderMusicPlaylist(); // Update highlighted song
+            saveStats();
+        }
+
+        function deleteSong(index) {
+            if (musicPlaylistData.length === 1 && musicPlaylistData[0].name === 'Default Music') {
+                showMessageModal('Ошибка', 'Нельзя удалить единственную стандартную песню.');
+                return;
+            }
+            
+            musicPlaylistData.splice(index, 1);
+            
+            if (index === currentMusicIndex) {
+                // If current song deleted, try to play the next or previous one
+                if (musicPlaylistData.length > 0) {
+                    currentMusicIndex = Math.max(0, index - 1); // Play previous or first
+                    playSong(currentMusicIndex);
+                } else {
+                    backgroundMusic.pause();
+                    backgroundMusic.src = '';
+                    currentMusicIndex = 0;
+                }
+            } else if (index < currentMusicIndex) {
+                currentMusicIndex--; // Adjust index if a song before current was deleted
+            }
+            renderMusicPlaylist();
+            saveStats();
+        }
+
+        musicUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'audio/mpeg') { // Check for MP3
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const newSong = {
+                        name: file.name,
+                        url: event.target.result
+                    };
+                    // Check if default music is the only one, if so, replace it
+                    if (musicPlaylistData.length === 1 && musicPlaylistData[0].name === 'Default Music' && musicPlaylistData[0].url === 'music.mp3') {
+                        musicPlaylistData = [newSong];
+                        currentMusicIndex = 0;
+                    } else {
+                        musicPlaylistData.push(newSong);
+                        currentMusicIndex = musicPlaylistData.length - 1; // Select the newly added song
+                    }
+                    playSong(currentMusicIndex);
+                    renderMusicPlaylist();
+                    saveStats();
+                    showMessageModal('Успех', `Песня "${file.name}" загружена!`);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                showMessageModal('Ошибка', 'Пожалуйста, выберите файл песни в формате .mp3.');
+            }
+        });
+
+        playMusicBtn.addEventListener('click', () => {
+            if (backgroundMusic.src) {
+                backgroundMusic.play().catch(e => console.error("Error playing music:", e));
+            } else if (musicPlaylistData.length > 0) {
+                playSong(currentMusicIndex);
+            }
+        });
+
+        pauseMusicBtn.addEventListener('click', () => {
+            backgroundMusic.pause();
+        });
+
         document.body.addEventListener('click', (e) => {
-            if (e.target.closest('.btn, .tab-button, .mode-card') && !e.target.closest('#vibrationToggleBtn')) {
+            if (e.target.closest('.btn, .tab-button, .mode-card') && !e.target.closest('#vibrationToggleBtn') && !e.target.closest('#solverModeToggleBtn') && !e.target.closest('#changeSolverSpeedBtn') && !e.target.closest('#applySolverSpeedBtn') && !e.target.closest('#closeSolverSpeedModalBtn') && !e.target.closest('#font-upload-input') && !e.target.closest('#applyFontBtn') && !e.target.closest('#resetFontBtn') && !e.target.closest('#music-upload-input') && !e.target.closest('#playMusicBtn') && !e.target.closest('#pauseMusicBtn') && !e.target.closest('#showSolverModalToggleBtn') && !e.target.closest('input[name="shuffleAnim"]')) {
                 vibrationManager.click();
             }
         });
 
+        // REMOVED LLM: Strategic Hint Button Logic removed
+
         function init() {
+            // Initialize the dedicated style element for custom font
+            customFontStyleElement = document.createElement('style');
+            customFontStyleElement.id = 'custom-font-style';
+            document.head.appendChild(customFontStyleElement);
+
             vibrationManager.load();
             initSliders();
             loadStats();
+            updateSolverModeButton(); // Set initial state of the solver mode button
+            updateSolverSpeedDisplay(); // Set initial state of the solver speed display
+            updateShowSolverModalButton(); // NEW: Set initial state of the show solver modal button
+            
+            // Set initial state of shuffle animation radio buttons
+            shuffleAnimFastRadio.checked = (shuffleAnimationType === 'fast');
+            shuffleAnimComplexRadio.checked = (shuffleAnimationType === 'complex');
+            document.querySelectorAll('input[name="shuffleAnim"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    shuffleAnimationType = e.target.value;
+                    saveStats();
+                    vibrationManager.click();
+                });
+            });
+
             renderModes();
             createGame(4); 
-            shuffleTiles(true); // Используем начальную анимацию при первом запуске
+            currentBoardState = tiles.map(t => {
+                if (t.classList.contains('empty-tile')) return 0;
+                return gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent);
+            });
+            shuffleTiles(true); // Initial shuffle with 'initial' animation
             checkAchievements(); 
             document.querySelector('.tab-content.active').querySelectorAll('.settings-card').forEach((card, index) => {
                 card.style.animation = `fadeInUp 0.5s ease-out ${index * 0.07}s forwards`;
             });
+
+            // Apply loaded custom font
+            if (customFontLoaded && customFontUrl) {
+                // Set the src for the @font-face rule in the dynamically created style element
+                customFontStyleElement.textContent = `@font-face { font-family: 'CustomFont'; src: url("${customFontUrl}"); }`;
+                const font = new FontFace('CustomFont', `url("${customFontUrl}")`); 
+                font.load().then(() => {
+                    document.fonts.add(font);
+                    applyCustomFont();
+                    // Set radio buttons based on loaded scope
+                    if (customFontApplyScope === 'tiles') fontApplyTilesRadio.checked = true;
+                    else if (customFontApplyScope === 'all') fontApplyAllRadio.checked = true;
+                    fontOptions.style.display = 'block';
+                }).catch(error => {
+                    console.error('Error reloading saved font:', error);
+                    customFontLoaded = false;
+                    customFontApplyScope = 'none';
+                    saveStats(); // Clear corrupted font data
+                });
+            }
+
+            // Init music player
+            backgroundMusic.volume = musicVolumeSlider.value / 100; // Apply loaded volume
+            if (musicPlaylistData.length > 0) {
+                backgroundMusic.src = musicPlaylistData[currentMusicIndex].url;
+            } else {
+                // Ensure default music is always present if playlist is empty
+                musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }];
+                backgroundMusic.src = musicPlaylistData[0].url;
+                currentMusicIndex = 0;
+            }
+            renderMusicPlaylist();
+
+            // NEW: Ensure solver related displays are hidden on load
+            hideLoadingOverlay(); 
+            solverMessageDisplay.innerHTML = ''; 
         }
         
         init();
@@ -2204,6 +3533,8 @@
 
         let isModalActive = false;
         messageModal.addEventListener('transitionend', () => { isModalActive = messageModal.classList.contains('active'); });
+        loadingModal.addEventListener('transitionend', () => { isModalActive = loadingModal.classList.contains('active'); }); 
+        solverSpeedModal.addEventListener('transitionend', () => { isModalActive = solverSpeedModal.classList.contains('active'); }); 
 
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && timerInterval && !isModalActive) {
