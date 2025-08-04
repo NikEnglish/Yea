@@ -7,20 +7,99 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Стили остаются без изменений */
+        /* CSS Variables for Light and Dark Themes */
         :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --accent-color: #fd79a8;
-            --dark-color: #2d3436;
-            --light-color: #f5f6fa;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-            --danger-color: #e17055;
-            --tile-color: #ffeaa7;
-            --highlight-color: #74b9ff;
-            --correct-color: #55efc4;
-            --info-color: #0984e3;
+            /* -- Светлая тема (Ваша текущая тема) -- */
+            --primary-color: #6c5ce7; /* Фиолетовый */
+            --secondary-color: #a29bfe; /* Светло-фиолетовый */
+            --accent-color: #fd79a8; /* Розовый */
+            --success-color: #00b894; /* Зеленый */
+            --warning-color: #fdcb6e; /* Желтый */
+            --danger-color: #e17055; /* Красный */
+            --info-color: #0984e3; /* Информационный синий */
+
+            /* Дефолтные цвета для светлой темы (эти переменные будут использоваться, если нет user-override) */
+            --tile-color: #ffeaa7; /* Фон плитки (кремовый) */
+            --tile-text-color: #2d3436; /* Цвет чисел на плитках (темно-серый) */
+            --highlight-color: #74b9ff; /* Цвет подсветки (голубой) */
+            --correct-color: #55efc4; /* Цвет правильных плиток (мятный) */
+            --background-body: #f5f6fa; /* Основной светлый фон */
+            --background-card: #ffffff; /* Фон блоков, карточек */
+            --background-game-field: #ffffff; /* Фон игрового поля */
+            --border-game-field: #cccccc; /* Светло-серый цвет рамки */
+            --border-card: #dfe6e9; /* Граница списка статистики */
+            --text-main: #2d3436; /* Основной цвет текста */
+            --text-secondary: #636e72; /* Серый для описаний */
+            --tile-obstacle-bg: #b2bec3; /* Серый для препятствий */
+            --tile-hidden-bg: #444; /* Темный фон для скрытых плиток */
+            --tab-button-bg: #ffffff;
+            --tab-button-text: #2d3436;
+            --stats-list-odd-bg: rgba(108, 92, 231, 0.05);
+            --stats-list-hover-bg: rgba(108, 92, 231, 0.1);
+
+            /* Тени и градиенты - зависят от темы */
+            --header-bg-gradient-start: var(--primary-color);
+            --header-bg-gradient-end: var(--secondary-color);
+            --header-shadow: rgba(0, 0, 0, 0.1);
+            --box-shadow-card: rgba(0, 0, 0, 0.05);
+            --box-shadow-tile: rgba(0, 0, 0, 0.1);
+            --box-shadow-button: rgba(108, 92, 231, 0.3);
+            --box-shadow-button-hover: rgba(108, 92, 231, 0.4);
+            --box-shadow-tile-correct: rgba(85, 239, 196, 0.5);
+            --box-shadow-tile-highlight: rgba(116, 185, 255, 0.7);
+            --modal-bg: #ffffff;
+            --modal-shadow: rgba(0, 0, 0, 0.2);
+            
+            /* Пользовательские переопределения (устанавливаются JS через setProperty) */
+            --user-override-tile-color: initial;
+            --user-override-tile-text-color: initial;
+            --user-override-highlight-color: initial;
+            --user-override-correct-color: initial;
+            --user-override-background-body: initial;
+            --user-override-border-game-field: initial;
+        }
+
+        /* Dark Theme overrides */
+        body.dark-theme {
+            --primary-color: #58a6ff; /* Голубой из Пятнашек подруги */
+            --secondary-color: #58a6ff; /* Тот же голубой */
+            --accent-color: #fd79a8; /* Розовый (можно оставить или изменить на другой акцент) */
+            --success-color: #238636; /* Зеленый из Пятнашек подруги */
+            --warning-color: #fdcb6e; /* Желтый (можно оставить) */
+            --danger-color: #e17055; /* Красный (можно оставить) */
+            --info-color: #30363d; /* Информационный (темный серый) */
+
+            /* Дефолтные цвета для темной темы (эти переменные будут использоваться, если нет user-override) */
+            --tile-color: #21262d; /* Фон плитки из Пятнашек подруги (темно-серый) */
+            --tile-text-color: #58a6ff; /* Цвет чисел на плитках из Пятнашек подруги (голубой) */
+            --highlight-color: #58a6ff; /* Цвет подсветки (основной цвет плиток в игре подруги) */
+            --correct-color: #2ea043; /* Цвет правильных плиток (более яркий зеленый) */
+            --background-body: #0d1117; /* Основной темный фон */
+            --background-card: #161b22; /* Фон блоков, карточек */
+            --background-game-field: #161b22; /* Фон игрового поля */
+            --border-game-field: #cccccc; /* Светло-серый цвет рамки */
+            --border-card: #30363d; /* Более темная граница */
+            --text-main: #c9d1d9; /* Светлый текст для общего интерфейса */
+            --text-secondary: #8b949e; /* Приглушенный серый */
+            --tile-obstacle-bg: #30363d; /* Темный серый для препятствий */
+            --tile-hidden-bg: #2d3436; /* Темнее для скрытых */
+            --tab-button-bg: #21262d;
+            --tab-button-text: #c9d1d9;
+            --stats-list-odd-bg: rgba(88, 166, 255, 0.05);
+            --stats-list-hover-bg: rgba(88, 166, 255, 0.1);
+            
+            /* Тени и градиенты - зависят от темы */
+            --header-bg-gradient-start: #161b22;
+            --header-bg-gradient-end: #161b22;
+            --header-shadow: rgba(0, 0, 0, 0.2);
+            --box-shadow-card: rgba(0, 0, 0, 0.2);
+            --box-shadow-tile: inset 0 2px 4px rgba(0, 0, 0, 0.25); /* Внутренняя тень как у подруги */
+            --box-shadow-button: rgba(0, 0, 0, 0.2);
+            --box-shadow-button-hover: rgba(0, 0, 0, 0.3);
+            --box-shadow-tile-correct: rgba(46, 160, 67, 0.5); /* Зеленое свечение */
+            --box-shadow-tile-highlight: rgba(88, 166, 255, 0.7);
+            --modal-bg: #161b22;
+            --modal-shadow: rgba(0, 0, 0, 0.4);
         }
 
         /* This @font-face rule will be dynamically updated by JavaScript */
@@ -37,13 +116,13 @@
 
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
+            background-color: var(--background-body); /* Использовать переменную */
+            color: var(--text-main); /* Использовать переменную */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход для всей темы */
         }
 
         body.custom-font-all {
@@ -59,10 +138,10 @@
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--header-bg-gradient-start), var(--header-bg-gradient-end)); /* Использовать переменные */
             color: white;
             padding: 20px 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px var(--header-shadow); /* Использовать переменную */
             position: relative;
             z-index: 10;
         }
@@ -96,6 +175,7 @@
             gap: 8px;
             backdrop-filter: blur(5px);
             margin-left: 10px; /* Отступ между показателями */
+            color: white; /* Всегда белый текст для Score Display */
         }
 
         .score-display i {
@@ -125,17 +205,17 @@
             display: grid;
             gap: 8px;
             margin: 20px auto;
-            border: 3px solid var(--primary-color);
+            border: 3px solid var(--border-game-field); /* Использовать переменную */
             touch-action: none;
             border-radius: 15px;
-            background-color: white;
+            background-color: var(--background-game-field); /* Использовать переменную */
             transition: all 0.3s ease;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px var(--box-shadow-card); /* Использовать переменную */
         }
 
         .tile {
-            background-color: var(--tile-color);
+            background-color: var(--user-override-tile-color, var(--tile-color)); /* Использовать переменную */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -146,9 +226,9 @@
             position: absolute;
             width: 60px;
             height: 60px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px var(--box-shadow-tile); /* Использовать переменную */
             cursor: pointer;
-            color: var(--dark-color);
+            color: var(--user-override-tile-text-color, var(--tile-text-color)); /* Использовать новую переменную для цвета чисел на плитках */
             border: 2px solid transparent;
             user-select: none;
             overflow: hidden; /* Для режима с картинкой */
@@ -164,15 +244,15 @@
         }
 
         .tile.correct {
-            border-color: var(--correct-color);
-            box-shadow: 0 0 15px rgba(85, 239, 196, 0.5);
+            border-color: var(--user-override-correct-color, var(--correct-color));
+            box-shadow: 0 0 15px var(--box-shadow-tile-correct); /* Использовать переменную */
         }
 
         .tile.highlight {
             z-index: 10;
-            background-color: var(--highlight-color);
-            color: white;
-            box-shadow: 0 0 20px rgba(116, 185, 255, 0.7);
+            background-color: var(--user-override-highlight-color, var(--highlight-color)); /* Использовать переменную */
+            color: white; /* Цвет текста на подсвеченной плитке всегда белый */
+            box-shadow: 0 0 20px var(--box-shadow-tile-highlight); /* Использовать переменную */
         }
 
         .tile-inner {
@@ -200,9 +280,9 @@
         }
 
         @keyframes correctGlow {
-            0% { box-shadow: 0 0 10px rgba(85, 239, 196, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(85, 239, 196, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(85, 239, 196, 0.5); }
+            0% { box-shadow: 0 0 10px var(--box-shadow-tile-correct); }
+            50% { box-shadow: 0 0 20px var(--box-shadow-tile-correct); }
+            100% { box-shadow: 0 0 10px var(--box-shadow-tile-correct); }
         }
 
         .empty-tile {
@@ -214,7 +294,7 @@
         }
 
         .tile.obstacle-tile {
-            background-color: #b2bec3; /* Серый цвет для препятствий */
+            background-color: var(--tile-obstacle-bg); /* Использовать переменную */
             cursor: not-allowed;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
             pointer-events: none; /* Запрет взаимодействия */
@@ -230,7 +310,7 @@
         
         .tile.darkness-hidden,
         .tile.hidden-path-hidden {
-            background-color: #444; /* Темный фон для скрытых плиток */
+            background-color: var(--tile-hidden-bg); /* Использовать переменную */
             color: transparent; /* Скрываем текст */
             box-shadow: none;
         }
@@ -271,24 +351,24 @@
 
         .tab-button {
             padding: 12px 25px;
-            background: white;
+            background: var(--tab-button-bg); /* Использовать переменную */
             border: none;
             border-radius: 30px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px var(--tab-button-shadow); /* Использовать переменную */
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--dark-color);
+            color: var(--tab-button-text); /* Использовать переменную */
         }
 
         .tab-button.active {
             background: var(--primary-color);
             color: white;
             transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 6px 15px var(--box-shadow-button-hover); /* Использовать переменную */
         }
 
         .tab-button i {
@@ -323,18 +403,18 @@
         }
         
         .settings-card, .achievement-card, .mode-card, .stats-card {
-            background: white;
+            background: var(--background-card); /* Использовать переменную */
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px var(--box-shadow-card); /* Использовать переменную */
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease; /* Добавить переходы */
             opacity: 0; /* Изначально скрыты для анимации */
             animation: fadeInUp 0.5s ease-out forwards;
         }
         
         .settings-card:hover, .achievement-card:hover, .mode-card:hover, .stats-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px var(--box-shadow-tile); /* Использовать переменную */
         }
 
         .settings-card h3 {
@@ -367,13 +447,13 @@
         .stats-value {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--dark-color);
+            color: var(--text-main); /* Использовать переменную */
             line-height: 1;
         }
 
         .stats-label {
             font-size: 1rem;
-            color: #636e72;
+            color: var(--text-secondary); /* Использовать переменную */
             margin-top: 5px;
         }
         
@@ -391,7 +471,7 @@
             padding: 0;
             max-height: 300px; /* Увеличил высоту для прокрутки */
             overflow-y: auto;
-            border: 1px solid #dfe6e9;
+            border: 1px solid var(--border-card); /* Использовать переменную */
             border-radius: 10px;
             padding: 10px;
         }
@@ -406,11 +486,11 @@
         }
 
         .stats-list li:nth-child(odd) {
-            background-color: rgba(108, 92, 231, 0.05);
+            background-color: var(--stats-list-odd-bg); /* Использовать переменную */
         }
         
         .stats-list li:hover {
-            background-color: rgba(108, 92, 231, 0.1);
+            background-color: var(--stats-list-hover-bg); /* Использовать переменную */
         }
 
         .stats-list-label {
@@ -430,7 +510,7 @@
             padding-left: 20px;
             margin-top: 5px;
             font-size: 0.9em;
-            color: #636e72;
+            color: var(--text-secondary); /* Использовать переменную */
         }
 
         .stats-sub-list li {
@@ -450,7 +530,7 @@
         .control-label {
             font-size: 16px;
             margin-right: 10px;
-            color: var(--dark-color);
+            color: var(--text-main); /* Использовать переменную */
         }
 
         input[type="color"] {
@@ -460,8 +540,8 @@
             border-radius: 50%;
             cursor: pointer;
             padding: 0;
-            border: 3px solid white;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--background-card); /* Слегка виден фон карточки */
+            box-shadow: 0 3px 10px var(--box-shadow-card); /* Использовать переменную */
         }
 
         input[type="range"] {
@@ -480,7 +560,7 @@
             border-radius: 50%;
             background: var(--primary-color);
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 5px var(--box-shadow-button); /* Использовать переменную */
         }
 
         .range-value {
@@ -505,7 +585,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 4px 10px var(--box-shadow-button); /* Использовать переменную */
             margin-right: 10px; /* Отступ между кнопками */
             margin-bottom: 10px; /* Отступ для адаптивности */
         }
@@ -513,7 +593,7 @@
         .btn:hover {
             background: var(--secondary-color);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 6px 15px var(--box-shadow-button-hover); /* Использовать переменную */
         }
         
         .btn:disabled {
@@ -573,13 +653,24 @@
             box-shadow: 0 6px 15px rgba(225, 112, 85, 0.4);
         }
 
-        .btn.active {
-            background: var(--danger-color);
+        /* Active state for a button that acts as a toggle, using primary color for 'on' state */
+        .btn.active-toggle {
+            background: var(--primary-color);
+            box-shadow: 0 6px 15px var(--box-shadow-button-hover);
+        }
+        
+        /* Inactive state for a button that acts as a toggle, using a neutral color */
+        .btn.inactive-toggle {
+            background: #b2bec3; /* Нейтральный серый */
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn.inactive-toggle:hover {
+             background: #99a2a8; /* Чуть темнее при наведении */
+             transform: translateY(-2px);
+             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .btn.active:hover {
-            background: #d15f44;
-        }
 
         .input-group {
             margin-bottom: 15px;
@@ -593,10 +684,12 @@
         .input-group input[type="file"] {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #dfe6e9;
+            border: 2px solid var(--border-card); /* Использовать переменную */
             border-radius: 30px;
             font-size: 16px;
             transition: all 0.3s ease;
+            background-color: var(--background-card); /* Использовать переменную */
+            color: var(--text-main); /* Использовать переменную */
         }
 
         .input-group input[type="number"]:focus,
@@ -614,13 +707,13 @@
         .achievements-intro {
             text-align: center;
             font-size: 1rem;
-            color: #636e72;
+            color: var(--text-secondary); /* Использовать переменную */
             margin: 0 auto 20px;
             max-width: 600px;
-            background: white;
+            background: var(--background-card); /* Использовать переменную */
             padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px var(--box-shadow-card); /* Использовать переменную */
         }
         
         .achievement-card {
@@ -648,7 +741,7 @@
             margin-bottom: 15px;
             color: white;
             font-size: 1.8rem;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 5px 15px var(--box-shadow-button); /* Использовать переменную */
         }
 
         .achievement-card.locked .achievement-icon {
@@ -658,19 +751,19 @@
         .achievement-title {
             font-weight: 700;
             margin-bottom: 5px;
-            color: var(--dark-color);
+            color: var(--text-main); /* Использовать переменную */
         }
 
         .achievement-desc {
             font-size: 0.9rem;
-            color: #636e72;
+            color: var(--text-secondary); /* Использовать переменную */
             margin-bottom: 10px;
         }
 
         .achievement-progress {
             width: 100%;
             height: 6px;
-            background: #dfe6e9;
+            background: var(--border-card); /* Использовать переменную */
             border-radius: 3px;
             margin-bottom: 10px;
             overflow: hidden;
@@ -720,7 +813,7 @@
 
         .mode-card.active {
             border-color: var(--primary-color);
-            background: rgba(108, 92, 231, 0.05);
+            background: var(--stats-list-odd-bg); /* Использовать переменную */
         }
 
         .mode-icon {
@@ -734,18 +827,18 @@
             margin-bottom: 15px;
             color: white;
             font-size: 1.8rem;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 5px 15px var(--box-shadow-button); /* Использовать переменную */
         }
 
         .mode-title {
             font-weight: 700;
             margin-bottom: 5px;
-            color: var(--dark-color);
+            color: var(--text-main); /* Использовать переменную */
         }
 
         .mode-desc {
             font-size: 0.9rem;
-            color: #636e72;
+            color: var(--text-secondary); /* Использовать переменную */
         }
 
         /* Modal Styles */
@@ -771,16 +864,17 @@
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--modal-bg); /* Использовать переменную */
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px var(--modal-shadow); /* Использовать переменную */
             text-align: center;
             max-width: 400px;
             width: 90%;
             transform: translateY(-50px);
             opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease; /* Добавить переходы */
+            color: var(--text-main); /* Использовать переменную */
         }
 
         .modal-overlay.active .modal-content {
@@ -795,7 +889,7 @@
         }
 
         .modal-content p {
-            color: var(--dark-color);
+            color: var(--text-main); /* Использовать переменную */
             margin-bottom: 20px;
             line-height: 1.5;
         }
@@ -833,7 +927,7 @@
             grid-template-columns: repeat(2, 50px); /* Small fixed size */
             grid-template-rows: repeat(2, 50px);
             gap: 5px;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--primary-color); /* Использовать переменную */
             border-radius: 8px;
             margin: 20px auto;
             width: fit-content;
@@ -855,16 +949,16 @@
         }
 
         .demo-tile {
-            background-color: var(--tile-color);
-            color: var(--dark-color);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: var(--user-override-tile-color, var(--tile-color)); /* Использовать переменную */
+            color: var(--user-override-tile-text-color, var(--tile-text-color)); /* Использовать переменную */
+            box-shadow: 0 2px 5px var(--box-shadow-tile); /* Использовать переменную */
             /* Initial position: bottom-right (index 3) */
             transform: translate(55px, 55px); /* 1 * (50+5), 1 * (50+5) */
         }
 
         .demo-empty {
             background-color: transparent;
-            border: 1px dashed #ccc;
+            border: 1px dashed var(--border-card); /* Использовать переменную */
             /* Initial position: top-left (index 0) */
             transform: translate(0px, 0px);
         }
@@ -890,7 +984,7 @@
         .font-list-container {
             max-height: 150px;
             overflow-y: auto;
-            border: 1px solid #eee;
+            border: 1px solid var(--border-card); /* Использовать переменную */
             border-radius: 8px;
             padding: 10px;
             margin-top: 10px;
@@ -901,7 +995,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 5px 0;
-            border-bottom: 1px dashed #f0f0f0;
+            border-bottom: 1px dashed var(--border-card); /* Использовать переменную */
         }
 
         .font-list-item:last-child {
@@ -918,22 +1012,7 @@
 
         .font-list-item span {
             font-size: 0.9rem;
-            color: var(--dark-color);
-        }
-
-        .warning-message {
-            font-size: 0.9rem;
-            color: var(--danger-color);
-            background-color: rgba(225, 112, 85, 0.1);
-            border: 1px solid var(--danger-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            text-align: center;
-            display: none; /* Hidden by default */
-        }
-        .warning-message.active {
-            display: block;
+            color: var(--text-main); /* Использовать переменную */
         }
 
         /* Responsive */
@@ -1053,11 +1132,6 @@
                          <button class="btn btn-info" id="hintBtn">
                             <i class="fas fa-lightbulb"></i> Подсказка
                         </button>
-                        <div class="warning-message" id="hintWarningMessage">
-                            Экспериментальная функция: могут быть ошибки. Если она сдвигает правильные плитки, не переживайте, нажмите ещё несколько раз.
-                        </div>
-                        <!-- Strategic Hint button removed -->
-                        <!-- LLM Hint Display removed -->
                         <button class="btn btn-danger" id="solveBtn">
                             <i class="fas fa-magic"></i> Решить головоломку
                         </button>
@@ -1155,6 +1229,17 @@
             
             <div class="tab-content" id="settings-tab">
                 <div class="settings-grid">
+                     <!-- NEW: Theme Switcher Card -->
+                     <div class="settings-card">
+                        <h3><i class="fas fa-adjust"></i> Тема оформления</h3>
+                        <div class="control-row" style="justify-content: center;">
+                            <button class="btn" id="themeToggleButton">
+                                <!-- Initial text/icon set by JS based on loaded theme -->
+                                <i class="fas fa-sun"></i> Светлая тема
+                            </button>
+                        </div>
+                     </div>
+                     <!-- End Theme Switcher Card -->
                      <div class="settings-card">
                         <h3><i class="fas fa-bullhorn"></i> Обратная связь</h3>
                         <div class="control-row">
@@ -1167,7 +1252,7 @@
                         <div class="control-row">
                             <span class="control-label">Показывать модальное окно:</span>
                             <button class="btn" id="showSolverModalToggleBtn">
-                                <i class="fas fa-times"></i> Выключено
+                                <i class="fas fa-check"></i> Включено
                             </button>
                         </div>
                     </div>
@@ -1177,11 +1262,8 @@
                         <div class="control-row">
                             <span class="control-label">Расчет:</span>
                             <button class="btn" id="solverModeToggleBtn">
-                                <i class="fas fa-bolt"></i> Моментальный
+                                <i class="fas fa-sync-alt"></i> Поэтапный
                             </button>
-                        </div>
-                        <div class="warning-message" id="solverModeWarning">
-                            Данный режим считает поэтапно каждый ход и может зависнуть из-за плохой оптимизации. Если вы не уверены, используйте моментальный.
                         </div>
                     </div>
                     <!-- Solver Speed Setting -->
@@ -1192,20 +1274,6 @@
                             <button class="btn" id="changeSolverSpeedBtn">
                                 <i class="fas fa-edit"></i> Изменить
                             </button>
-                        </div>
-                    </div>
-                    <!-- NEW: Shuffle Animation Type Setting -->
-                    <div class="settings-card">
-                        <h3><i class="fas fa-random"></i> Анимация перемешивания</h3>
-                        <div class="control-row" style="flex-direction: column; align-items: flex-start;">
-                            <div class="font-option-row">
-                                <input type="radio" id="shuffleAnimFast" name="shuffleAnim" value="fast" checked>
-                                <label for="shuffleAnimFast">Быстрая (мгновенная)</label>
-                            </div>
-                            <div class="font-option-row">
-                                <input type="radio" id="shuffleAnimComplex" name="shuffleAnim" value="complex">
-                                <label for="shuffleAnimComplex">Сложная (с движением)</label>
-                            </div>
                         </div>
                     </div>
                     <!-- NEW: Music Settings -->
@@ -1311,7 +1379,7 @@
         const solveBtn = document.getElementById('solveBtn'); 
         const bgColorPicker = document.getElementById('bgColor');
         const borderColorPicker = document.getElementById('borderColor');
-        const textColorPicker = document.getElementById('textColor');
+        const textColorPicker = document.getElementById('textColor'); // Этот пикер теперь для tile-text-color
         const highlightColorPicker = document.getElementById('highlightColor');
         const correctColorPicker = document.getElementById('correctColor');
         const tileSizeSlider = document.getElementById('tileSizeSlider');
@@ -1358,13 +1426,10 @@
         const pauseMusicBtn = document.getElementById('pauseMusicBtn'); // NEW
         const showSolverModalToggleBtn = document.getElementById('showSolverModalToggleBtn'); // NEW
         const solverMessageDisplay = document.getElementById('solverMessageDisplay'); // NEW
-        const hintWarningMessage = document.getElementById('hintWarningMessage'); // NEW
-        const solverModeWarning = document.getElementById('solverModeWarning'); // NEW
-        // const strategicHintBtn = document.getElementById('strategicHintBtn'); // REMOVED LLM
-        // const llmHintDisplay = document.getElementById('llmHintDisplay'); // REMOVED LLM
-        const shuffleAnimFastRadio = document.getElementById('shuffleAnimFast'); // NEW Shuffle Anim
-        const shuffleAnimComplexRadio = document.getElementById('shuffleAnimComplex'); // NEW Shuffle Anim
-        
+        // NEW: Theme Toggle elements (updated for button)
+        const themeToggleButton = document.getElementById('themeToggleButton'); 
+        const body = document.body;
+
         // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -1473,19 +1538,19 @@
         let isSolvingPuzzle = false; 
         let usedHintInCurrentGame = false; 
         let usedAutoSolveInCurrentGame = false; 
-        let solverMode = 'instant'; // Changed default to 'instant'
+        let solverMode = 'step-by-step'; // 'step-by-step' or 'instant'
         let solverAnimationSpeed = 150; // Default 150ms delay per move for solver animation
         let customFontLoaded = false; // NEW
         let customFontUrl = ''; // NEW: Store the URL of the loaded font
         let customFontApplyScope = 'none'; // 'none', 'tiles', 'all' // NEW
         let musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }]; // NEW
         let currentMusicIndex = 0; // NEW
-        let showSolverModal = false; // NEW: Default to false as requested
+        let showSolverModal = true; // NEW
         let currentSolverPath = null; // NEW: Stores the full path for solver/hint
         let currentSolverPathStep = 0; // NEW: Current step in the pre-calculated path
         let isCalculatingPath = false; // NEW: To prevent multiple calculations
         let customFontStyleElement = null; // NEW: Reference to the dynamically created style element for custom font
-        let shuffleAnimationType = 'fast'; // NEW: Default shuffle animation type
+        let currentTheme = 'light-theme'; // NEW: Stores the current theme ('light-theme' or 'dark-theme')
 
         // Achievement Data
         const achievementsData = [
@@ -1535,7 +1600,7 @@
         const gameModes = [
             { id: 'classic', title: 'Классический', description: 'Стандартные пятнашки', icon: 'fa-th', active: true, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'time', title: 'На время', description: 'Соберите головоломку как можно быстрее', icon: 'fa-stopwatch', active: false, getLimits: (size) => ({ moves: Infinity, time: size * size * 5 }) },
-            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false, getLimits: (size) => ({ moves: size * size * 10, time: Infinity }) }, // Fixed: Set a default move limit
+            { id: 'moves', title: 'С ограничением ходов', description: 'Соберите за ограниченное количество ходов', icon: 'fa-shoe-prints', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'reverse', title: 'Обратный', description: 'Начните с собранного состояния и соберите в обратном порядке', icon: 'fa-exchange-alt', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'image', title: 'С картинкой', description: 'Вместо цифр - фрагменты изображения', icon: 'fa-image', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }) },
             { id: 'obstacle', title: 'С препятствиями', description: 'Некоторые плитки заблокированы на своих местах', icon: 'fa-ban', active: false, getLimits: (size) => ({ moves: Infinity, time: Infinity }), getObstacleCount: (size) => Math.max(1, Math.floor(size * size * 0.05)) },
@@ -1615,8 +1680,10 @@
             document.querySelectorAll('.tile.hidden-number.revealed').forEach(tile => { tile.classList.remove('revealed'); });
             document.querySelectorAll('.tile.darkness-hidden, .tile.hidden-path-hidden').forEach(tile => {
                 tile.classList.remove('darkness-hidden', 'hidden-path-hidden');
-                tile.style.backgroundColor = tileColorPicker.value;
-                tile.style.color = textColorPicker.value;
+                // Ensure colors revert to theme defaults, not fixed picker values
+                const computedStyle = getComputedStyle(document.documentElement);
+                tile.style.backgroundColor = computedStyle.getPropertyValue('--tile-color');
+                tile.style.color = computedStyle.getPropertyValue('--tile-text-color'); // Используем tile-text-color
             });
             darknessRevealedTiles.clear();
         }
@@ -1668,7 +1735,10 @@
                 tile.style.height = tileSize + 'px';
                 tile.style.borderRadius = tileRadius + 'px';
                 tile.style.fontSize = fontSize + 'px';
-                tile.style.color = textColorPicker.value;
+                // Use CSS variables for initial colors
+                const computedStyle = getComputedStyle(document.documentElement);
+                tile.style.backgroundColor = computedStyle.getPropertyValue('--user-override-tile-color', computedStyle.getPropertyValue('--tile-color'));
+                tile.style.color = computedStyle.getPropertyValue('--user-override-tile-text-color', computedStyle.getPropertyValue('--tile-text-color'));
                 tile.style.opacity = 0;
                 tiles.push(tile);
                 gameField.appendChild(tile);
@@ -1705,13 +1775,16 @@
         function highlightNumber(number) {
             if (highlightedTile) {
                 highlightedTile.classList.remove('highlight');
-                highlightedTile.style.backgroundColor = tileColorPicker.value;
-                highlightedTile.style.color = textColorPicker.value;
+                // Ensure colors revert to theme defaults, not fixed picker values
+                const computedStyle = getComputedStyle(document.documentElement);
+                highlightedTile.style.backgroundColor = computedStyle.getPropertyValue('--user-override-tile-color', computedStyle.getPropertyValue('--tile-color'));
+                highlightedTile.style.color = computedStyle.getPropertyValue('--user-override-tile-text-color', computedStyle.getPropertyValue('--tile-text-color'));
             }
             if (!number || number < 1 || number > currentSize * currentSize - 1) return;
             highlightedTile = Array.from(document.querySelectorAll('.tile')).find(tile => !tile.classList.contains('empty-tile') && tile.querySelector('.tile-inner')?.textContent == number);
             if (highlightedTile) {
                 highlightedTile.classList.add('highlight');
+                // Здесь `highlightColorPicker.value` используется, так как это пользовательский выбор, а не цвет по умолчанию
                 highlightedTile.style.backgroundColor = highlightColorPicker.value;
                 highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
                 gameStats.numbersFound++;
@@ -1773,8 +1846,10 @@
             autoHighlightBtn.innerHTML = '<i class="fas fa-magic"></i> Автоподсветка';
             if (highlightedTile) {
                 highlightedTile.classList.remove('highlight');
-                highlightedTile.style.backgroundColor = tileColorPicker.value;
-                highlightedTile.style.color = textColorPicker.value;
+                // Ensure colors revert to theme defaults, not fixed picker values
+                const computedStyle = getComputedStyle(document.documentElement);
+                highlightedTile.style.backgroundColor = computedStyle.getPropertyValue('--user-override-tile-color', computedStyle.getPropertyValue('--tile-color'));
+                highlightedTile.style.color = computedStyle.getPropertyValue('--user-override-tile-text-color', computedStyle.getPropertyValue('--tile-text-color'));
                 highlightedTile = null;
             }
         }
@@ -1783,159 +1858,56 @@
             if (isAutoHighlighting) { stopAutoHighlight(); } else { autoHighlightNext(); }
         }
 
-        // Helper function for the "fast" shuffle (extracted from original shuffleTiles)
-        function shuffleTilesInstant(isInitialShuffle, predefinedShuffledValues = null, predefinedEmptyIndex = -1) {
-            let boardValues;
-            let emptyTileCurrentPosition;
-
-            if (predefinedShuffledValues) {
-                boardValues = predefinedShuffledValues;
-                emptyTileCurrentPosition = predefinedEmptyIndex;
-            } else {
-                boardValues = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-                boardValues.push(0); // Add empty tile value
-
-                let solvable = false;
-                while (!solvable) {
-                    boardValues.sort(() => Math.random() - 0.5);
-                    emptyTileCurrentPosition = boardValues.indexOf(0);
-                    solvable = isSolvable(boardValues, currentSize, emptyTileCurrentPosition);
-                }
-            }
-            
-            let newTilesOrder = [];
-            for (let i = 0; i < boardValues.length; i++) {
-                if (boardValues[i] === 0) {
-                    newTilesOrder.push(tiles.find(t => t.classList.contains('empty-tile')));
-                    emptyTileIndex = i;
-                } else {
-                    newTilesOrder.push(tiles.find(t => {
-                        const tileValue = t.classList.contains('empty-tile') ? 0 : (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
-                        return tileValue === boardValues[i];
-                    }));
-                }
-            }
-            tiles = newTilesOrder;
-            currentBoardState = boardValues; // Update `currentBoardState` with the new order
-            
-            renderTiles(currentSize, 'shuffle'); // Use 'shuffle' animation type for instant
-        }
-
-        async function shuffleTiles(isInitialShuffle = false) {
+        function shuffleTiles(isInitialShuffle = false) {
             stopGameMechanisms();
             gameStats.shuffles++;
             saveStats();
             checkAchievements();
             
+            // NEW: Reset solver/hint path on shuffle
             currentSolverPath = null;
             currentSolverPathStep = 0;
             isCalculatingPath = false;
             updateSolverMessage('');
-            // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint on shuffle
 
-            // Disable buttons during shuffle
-            shuffleBtn.disabled = true;
-            applySizeBtn.disabled = true;
-            hintBtn.disabled = true;
-            solveBtn.disabled = true;
-            // strategicHintBtn.disabled = true; // REMOVED LLM: Disable strategic hint
+            // Corrected approach for `shuffleTiles`:
+            // 1. Create a flat array of numbers (1 to N-1, plus 0 for empty).
+            let boardValues = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
+            boardValues.push(0); // Add empty tile value
 
-            try {
-                if (isInitialShuffle) { // Always use 'initial' animation for first shuffle
-                    shuffleTilesInstant(true);
-                    applyModeSpecificStylesAndLogic(); // Apply mode styles after initial render
-                    return; // Exit early for initial shuffle
-                }
-
-                if (shuffleAnimationType === 'complex' && currentSize === 4) { // Complex animation only for 4x4 for now
-                    updateSolverMessage('Просчитываю сложную анимацию перемешивания...');
-
-                    // 1. Generate a solvable target shuffled state
-                    let targetShuffledValues = [];
-                    let emptyTileTargetPosition = -1;
-                    let solvable = false;
-                    while (!solvable) {
-                        targetShuffledValues = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-                        targetShuffledValues.push(0);
-                        targetShuffledValues.sort(() => Math.random() - 0.5);
-                        emptyTileTargetPosition = targetShuffledValues.indexOf(0);
-                        solvable = isSolvable(targetShuffledValues, currentSize, emptyTileTargetPosition);
-                    }
-
-                    // 2. Calculate the path from the *target shuffled state* to the *solved state*
-                    const solvedBoard = Array.from({length: currentSize * currentSize - 1}, (_, i) => i + 1);
-                    solvedBoard.push(0); 
-
-                    const goalTargetsForSolver = getGoalTargets(currentSize); 
-
-                    const pathToSolveTargetShuffled = await findPathToGoal(targetShuffledValues, currentSize, goalTargetsForSolver, []);
-                    
-                    if (!pathToSolveTargetShuffled) {
-                        console.warn("Could not find path for complex shuffle, falling back to fast animation.");
-                        updateSolverMessage('Не удалось просчитать сложную анимацию. Перемешиваю быстро.');
-                        await new Promise(resolve => setTimeout(resolve, 1000)); 
-                        hideLoadingOverlay();
-                        shuffleTilesInstant(isInitialShuffle);
-                        return;
-                    }
-
-                    const pathToShuffle = pathToSolveTargetShuffled.reverse();
-
-                    // 3. Reset the game board to the solved state visually and logically
-                    let tempTiles = [];
-                    let tempBoardState = [];
-                    for (let i = 1; i <= currentSize * currentSize - 1; i++) {
-                        tempTiles.push(tiles.find(t => parseInt(t.querySelector('.tile-inner')?.textContent) === i));
-                        tempBoardState.push(i);
-                    }
-                    tempTiles.push(tiles.find(t => t.classList.contains('empty-tile')));
-                    tempBoardState.push(0);
-
-                    tiles = tempTiles;
-                    currentBoardState = tempBoardState;
-                    emptyTileIndex = currentBoardState.indexOf(0);
-                    renderTiles(currentSize, 'initial'); // Render in solved state
-
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Small pause before shuffle animation starts
-
-                    hideLoadingOverlay(); // Hide loading after calculation, before animation
-
-                    // 4. Animate the reversed path moves
-                    for (const moveTileIndex of pathToShuffle) {
-                        const tileValueToMove = currentBoardState[moveTileIndex];
-                        const tileDOMElement = tiles.find(t => {
-                            if (t.classList.contains('empty-tile')) return false;
-                            const val = (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
-                            return val === tileValueToMove;
-                        });
-
-                        if (!tileDOMElement) {
-                            console.error("DOM element not found for tile value during complex shuffle:", tileValueToMove);
-                            continue;
-                        }
-                        const tileDOMIndex = tiles.indexOf(tileDOMElement);
-
-                        await moveTile(tileDOMIndex, currentSize, true, false); 
-                        await new Promise(resolve => setTimeout(resolve, solverAnimationSpeed / 2)); 
-                    }
-
+            // 2. Shuffle this array until it's solvable.
+            let shuffledValues = [];
+            let emptyTileCurrentPosition = -1; // Index of 0 in the shuffled array
+            let solvable = false; // Reset solvable flag for the loop
+            while (!solvable) {
+                shuffledValues = boardValues.slice().sort(() => Math.random() - 0.5);
+                emptyTileCurrentPosition = shuffledValues.indexOf(0);
+                solvable = isSolvable(shuffledValues, currentSize, emptyTileCurrentPosition);
+            }
+            
+            // 3. Update DOM tiles based on the solvable shuffledValues
+            let newTilesOrder = [];
+            for (let i = 0; i < shuffledValues.length; i++) {
+                if (shuffledValues[i] === 0) {
+                    newTilesOrder.push(tiles.find(t => t.classList.contains('empty-tile')));
+                    emptyTileIndex = i;
                 } else {
-                    // Fallback for non-4x4 or 'fast' animation type
-                    shuffleTilesInstant(isInitialShuffle);
+                    // Find the tile DOM element that has this value
+                    newTilesOrder.push(tiles.find(t => {
+                        const tileValue = t.classList.contains('empty-tile') ? 0 : (gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent));
+                        return tileValue === shuffledValues[i];
+                    }));
                 }
-            } catch (error) {
-                console.error("Error during complex shuffle:", error);
-                showMessageModal('Ошибка перемешивания', `Произошла ошибка при сложной анимации: ${error.message}. Перемешиваю быстро.`);
-                shuffleTilesInstant(isInitialShuffle); // Fallback to instant on error
-            } finally {
-                // Re-enable buttons
-                shuffleBtn.disabled = false;
-                applySizeBtn.disabled = false;
-                hintBtn.disabled = false;
-                solveBtn.disabled = false;
-                // strategicHintBtn.disabled = false; // REMOVED LLM: Re-enable strategic hint
-                hideLoadingOverlay();
-                applyModeSpecificStylesAndLogic(); // Apply mode styles after shuffle
+            }
+            tiles = newTilesOrder;
+            currentBoardState = shuffledValues; // Update `currentBoardState` with the new order
+            
+            applyModeSpecificStylesAndLogic();
+
+            if (isInitialShuffle) {
+                renderTiles(currentSize, 'initial');
+            } else {
+                renderTiles(currentSize, 'shuffle');
             }
         }
 
@@ -1948,8 +1920,10 @@
                 const tileInner = tile.querySelector('.tile-inner');
                 if (tileInner) {
                     tileInner.style.display = 'flex';
-                    tile.style.backgroundColor = tileColorPicker.value;
-                    tile.style.color = textColorPicker.value;
+                    // Use CSS variables for colors
+                    const computedStyle = getComputedStyle(document.documentElement);
+                    tile.style.backgroundColor = computedStyle.getPropertyValue('--user-override-tile-color', computedStyle.getPropertyValue('--tile-color'));
+                    tile.style.color = computedStyle.getPropertyValue('--user-override-tile-text-color', computedStyle.getPropertyValue('--tile-text-color'));
                 }
                 tile.style.pointerEvents = 'auto';
             });
@@ -2072,14 +2046,11 @@
             if (tileIndex === emptyTileIndex) return;
             if (gameMode === 'obstacle' && obstacleTiles.has(tiles[tileIndex].id)) { return; }
             
-            // NEW: If it's a manual move, invalidate the current solver/hint path and hide LLM hint
-            if (!isAutoSolve && !isHintMove) {
-                if (currentSolverPath) {
-                    currentSolverPath = null;
-                    currentSolverPathStep = 0;
-                    updateSolverMessage(''); // Clear any active solver/hint messages
-                }
-                // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint on any manual move
+            // NEW: If it's a manual move, invalidate the current solver/hint path
+            if (!isAutoSolve && !isHintMove && currentSolverPath) {
+                currentSolverPath = null;
+                currentSolverPathStep = 0;
+                updateSolverMessage(''); // Clear any active solver/hint messages
             }
 
             if (isValidMove(tileIndex, emptyTileIndex, size)) {
@@ -2263,10 +2234,8 @@
             hintBtn.disabled = false; 
             shuffleBtn.disabled = false; 
             applySizeBtn.disabled = false; 
-            // strategicHintBtn.disabled = false; // REMOVED LLM: Enable strategic hint button
             updateSolverMessage(''); // NEW: Clear messages
-            // llmHintDisplay.style.display = 'none'; // REMOVED LLM: Hide LLM hint
-            backgroundMusic.play().catch(e => console.error("Error playing music:", e)); // NEW: Play music on win
+            // REMOVED: backgroundMusic.play().catch(e => console.error("Error playing music:", e)); 
         }
 
         function showWinAnimation() {
@@ -2296,10 +2265,7 @@
             renderStatistics();
             createConfetti();
             setTimeout(() => {
-                // Modified: Auto-shuffle after win modal closes
-                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`, () => {
-                    shuffleTiles(true);
-                });
+                showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`);
             }, 1000);
         }
 
@@ -2378,7 +2344,8 @@
                     let isCorrect = (tileValue === checkTargetOrder[index]);
                     if (isCorrect) {
                         tile.classList.add('correct');
-                        tile.style.borderColor = correctColorPicker.value;
+                        // Здесь correctColorPicker.value используется, так как это пользовательский выбор
+                        tile.style.borderColor = correctColorPicker.value; 
                     } else {
                         tile.classList.remove('correct');
                         tile.style.borderColor = 'transparent';
@@ -2387,17 +2354,19 @@
             });
         }
         
+        // Corrected updateColors to only set user overrides
         function updateColors(colorType) {
-            document.body.style.backgroundColor = bgColorPicker.value;
-            document.body.style.color = getContrastColor(bgColorPicker.value);
-            gameField.style.borderColor = borderColorPicker.value;
-            tiles.forEach(tile => {
-                if (!tile.classList.contains('empty-tile') && !tile.classList.contains('obstacle-tile') && !tile.classList.contains('darkness-hidden') && !tile.classList.contains('hidden-path-hidden')) {
-                    tile.style.backgroundColor = tileColorPicker.value;
-                    tile.style.color = textColorPicker.value;
-                }
-            });
-            highlightCorrectTiles(currentSize);
+            document.documentElement.style.setProperty('--user-override-tile-color', tileColorPicker.value);
+            document.documentElement.style.setProperty('--user-override-background-body', bgColorPicker.value);
+            document.documentElement.style.setProperty('--user-override-border-game-field', borderColorPicker.value);
+            document.documentElement.style.setProperty('--user-override-tile-text-color', textColorPicker.value);
+            document.documentElement.style.setProperty('--user-override-highlight-color', highlightColorPicker.value);
+            document.documentElement.style.setProperty('--user-override-correct-color', correctColorPicker.value);
+
+            // Re-apply visual updates based on current effective CSS variables
+            applyVisualUpdates(); 
+            renderMusicPlaylist(); // To update music playlist text color
+
             gameStats.colorsChanged.add(colorType);
             saveStats();
             checkAchievements();
@@ -2416,7 +2385,7 @@
             localStorage.setItem('currentMusicIndex_v1', currentMusicIndex); // NEW
             localStorage.setItem('musicVolume_v1', backgroundMusic.volume); // NEW
             localStorage.setItem('showSolverModal_v1', showSolverModal); // NEW
-            localStorage.setItem('shuffleAnimationType_v1', shuffleAnimationType); // NEW Shuffle Anim
+            localStorage.setItem('theme_v1', currentTheme); // NEW: Save current theme
         }
 
         function loadStats() {
@@ -2431,7 +2400,7 @@
             const savedCurrentMusicIndex = localStorage.getItem('currentMusicIndex_v1'); // NEW
             const savedMusicVolume = localStorage.getItem('musicVolume_v1'); // NEW
             const savedShowSolverModal = localStorage.getItem('showSolverModal_v1'); // NEW
-            const savedShuffleAnimationType = localStorage.getItem('shuffleAnimationType_v1'); // NEW Shuffle Anim
+            const savedTheme = localStorage.getItem('theme_v1'); // NEW: Load saved theme
 
             initializeStats(); 
             if (savedStats) {
@@ -2463,12 +2432,51 @@
             if (savedCurrentMusicIndex) { currentMusicIndex = parseInt(savedCurrentMusicIndex); } // NEW
             if (savedMusicVolume) { backgroundMusic.volume = parseFloat(savedMusicVolume); } // NEW
             if (savedShowSolverModal) { showSolverModal = savedShowSolverModal === 'true'; } // NEW
-            if (savedShuffleAnimationType) { shuffleAnimationType = savedShuffleAnimationType; } // NEW Shuffle Anim
+            
+            // Apply saved theme first
+            if (savedTheme) { 
+                currentTheme = savedTheme;
+                body.classList.add(currentTheme);
+            } else {
+                currentTheme = 'light-theme'; // Default
+                body.classList.remove('dark-theme');
+            }
+            // Update button text and class based on loaded theme
+            updateThemeButton();
 
             calculateAchievementScore();
             renderAchievements();
             renderStatistics();
+            // Restore color pickers to their current active theme colors
+            updateColorPickersFromCSS();
         }
+
+        // NEW function to update color pickers based on current computed CSS variables
+        function updateColorPickersFromCSS() {
+            const computedStyle = getComputedStyle(document.documentElement);
+            // Read computed (effective) values from CSS and apply to picker inputs
+            tileColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-tile-color').trim() || computedStyle.getPropertyValue('--tile-color').trim());
+            bgColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-background-body').trim() || computedStyle.getPropertyValue('--background-body').trim());
+            borderColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-border-game-field').trim() || computedStyle.getPropertyValue('--border-game-field').trim());
+            textColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-tile-text-color').trim() || computedStyle.getPropertyValue('--tile-text-color').trim());
+            highlightColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-highlight-color').trim() || computedStyle.getPropertyValue('--highlight-color').trim());
+            correctColorPicker.value = rgbToHex(computedStyle.getPropertyValue('--user-override-correct-color').trim() || computedStyle.getPropertyValue('--correct-color').trim());
+        }
+
+        // Helper function to convert RGB to Hex (for color pickers)
+        function rgbToHex(rgb) {
+            // Check if it's already a hex color
+            if (rgb.startsWith('#')) return rgb;
+            // Handle rgba colors by converting to rgb first (ignoring alpha for now)
+            const rgbaMatch = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/.exec(rgb);
+            if (rgbaMatch) {
+                 rgb = `rgb(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]})`;
+            }
+            const result = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(rgb);
+            return result ? '#' + 
+                (1 << 24 | parseInt(result[1]).toString(16) << 16 | parseInt(result[2]).toString(16) << 8 | parseInt(result[3]).toString(16)).toString(16).slice(1) : '#000000'; // Default to black if conversion fails
+        }
+
 
         function calculateAchievementScore() {
             let total = 0;
@@ -2496,8 +2504,8 @@
         function showAchievementUnlocked(achievement) {
             const notification = document.createElement('div');
             notification.className = 'achievement-notification';
-            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 15px; z-index: 1000; transform: translateX(200%); transition: transform 0.5s ease;';
-            notification.innerHTML = `<div class="achievement-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas ${achievement.icon}"></i></div><div><div style="font-weight: bold; color: var(--primary-color);">Достижение разблокировано!</div><div style="font-weight: 600; margin: 5px 0;">${achievement.title}</div><div style="font-size: 0.9rem; color: #636e72;">+${achievement.points} очков</div></div>`;
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--background-card); padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px var(--box-shadow-card); display: flex; align-items: center; gap: 15px; z-index: 1000; transform: translateX(200%); transition: transform 0.5s ease; color: var(--text-main);'; /* Added theme variables */
+            notification.innerHTML = `<div class="achievement-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas ${achievement.icon}"></i></div><div><div style="font-weight: bold; color: var(--primary-color);">Достижение разблокировано!</div><div style="font-weight: 600; margin: 5px 0;">${achievement.title}</div><div style="font-size: 0.9rem; color: var(--text-secondary);">+${achievement.points} очков</div></div>`; /* Added theme variables */
             document.body.appendChild(notification);
             setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100);
             setTimeout(() => { notification.style.transform = 'translateX(200%)'; setTimeout(() => { notification.remove(); }, 500); }, 5000);
@@ -2864,7 +2872,6 @@
             hintBtn.disabled = true;
             shuffleBtn.disabled = true; 
             applySizeBtn.disabled = true; 
-            // strategicHintBtn.disabled = true; // REMOVED LLM: Disable strategic hint button
             
             let currentPuzzleState = [...initialBoard]; 
             let locked = [];
@@ -2970,20 +2977,9 @@
                 hintBtn.disabled = false;
                 shuffleBtn.disabled = false;
                 applySizeBtn.disabled = false;
-                // strategicHintBtn.disabled = false; // REMOVED LLM: Enable strategic hint button
             }
         }
         
-        // Helper function to get goal targets for the A* solver
-        function getGoalTargets(size) {
-            const goals = {};
-            for (let i = 1; i <= size * size - 1; i++) {
-                goals[i] = { row: Math.floor((i - 1) / size), col: (i - 1) % size };
-            }
-            goals[0] = { row: size - 1, col: size - 1 }; // Empty tile goal at bottom-right
-            return goals;
-        }
-
         // Event Handlers
         gameField.addEventListener('click', (e) => {
             if (isSolvingPuzzle) return; 
@@ -3050,15 +3046,26 @@
         tileColorPicker.addEventListener('change', () => updateColors('tile'));
         bgColorPicker.addEventListener('change', () => updateColors('bg'));
         borderColorPicker.addEventListener('change', () => updateColors('border'));
-        textColorPicker.addEventListener('change', () => updateColors('text'));
+        textColorPicker.addEventListener('change', () => updateColors('text')); // This now controls --tile-text-color
         highlightColorPicker.addEventListener('change', (e) => {
+            document.documentElement.style.setProperty('--user-override-highlight-color', highlightColorPicker.value);
+            // Read back the effectively applied color for immediate visual update on the highlighted tile
+            const currentHighlightColor = getComputedStyle(document.documentElement).getPropertyValue('--user-override-highlight-color', getComputedStyle(document.documentElement).getPropertyValue('--highlight-color'));
             if (highlightedTile) {
-                highlightedTile.style.backgroundColor = highlightColorPicker.value;
-                highlightedTile.style.color = getContrastColor(highlightColorPicker.value);
+                highlightedTile.style.backgroundColor = currentHighlightColor; 
+                highlightedTile.style.color = getContrastColor(currentHighlightColor);
             }
-             updateColors('highlight');
+            gameStats.colorsChanged.add('highlight');
+            saveStats();
+            checkAchievements();
         });
-        correctColorPicker.addEventListener('change', () => { highlightCorrectTiles(currentSize); updateColors('correct'); });
+        correctColorPicker.addEventListener('change', () => { 
+            document.documentElement.style.setProperty('--user-override-correct-color', correctColorPicker.value);
+            highlightCorrectTiles(currentSize); 
+            gameStats.colorsChanged.add('correct');
+            saveStats();
+            checkAchievements(); 
+        });
 
         findNumberBtn.addEventListener('click', () => {
             const number = parseInt(numberInput.value);
@@ -3130,9 +3137,6 @@
             saveStats();
             checkAchievements();
             
-            hintWarningMessage.classList.add('active'); // Show hint warning
-            setTimeout(() => { hintWarningMessage.classList.remove('active'); }, 5000); // Hide after 5 seconds
-
             if (!currentSolverPath || currentSolverPathStep >= currentSolverPath.length) {
                 // Calculate new path if none exists or path is exhausted
                 const currentBoard = tiles.map(t => {
@@ -3175,12 +3179,10 @@
                 solverModeToggleBtn.innerHTML = `<i class="fas fa-sync-alt"></i> Поэтапный`;
                 solverModeToggleBtn.classList.remove('btn-warning');
                 solverModeToggleBtn.classList.add('btn-info');
-                solverModeWarning.classList.add('active'); // Show warning
             } else {
                 solverModeToggleBtn.innerHTML = `<i class="fas fa-bolt"></i> Моментальный`;
                 solverModeToggleBtn.classList.remove('btn-info');
                 solverModeToggleBtn.classList.add('btn-warning');
-                solverModeWarning.classList.remove('active'); // Hide warning
             }
         }
 
@@ -3282,8 +3284,9 @@
                         customFontLoaded = true;
                         console.log('Font loaded:', file.name);
                         // Optionally apply to tiles for a quick preview
-                        tiles.forEach(tile => tile.classList.add('custom-font-tile'));
-                        document.body.classList.remove('custom-font-all');
+                        // Do not automatically apply, let user choose via radio buttons
+                        // tiles.forEach(tile => tile.classList.add('custom-font-tile'));
+                        // document.body.classList.remove('custom-font-all');
                     }).catch(error => {
                         console.error('Error loading font:', error);
                         showMessageModal('Ошибка', 'Не удалось загрузить шрифт. Убедитесь, что это действительный файл .ttf.');
@@ -3355,8 +3358,13 @@
                 li.textContent = song.name;
                 li.dataset.index = index;
                 if (index === currentMusicIndex) {
+                    // Use CSS variables for highlight color
                     li.style.fontWeight = 'bold';
-                    li.style.color = 'var(--primary-color)'; // Corrected CSS variable usage
+                    li.style.color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+                } else {
+                    // Ensure normal state also uses CSS variables
+                    li.style.fontWeight = 'normal';
+                    li.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
                 }
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Удалить';
@@ -3447,12 +3455,48 @@
         });
 
         document.body.addEventListener('click', (e) => {
-            if (e.target.closest('.btn, .tab-button, .mode-card') && !e.target.closest('#vibrationToggleBtn') && !e.target.closest('#solverModeToggleBtn') && !e.target.closest('#changeSolverSpeedBtn') && !e.target.closest('#applySolverSpeedBtn') && !e.target.closest('#closeSolverSpeedModalBtn') && !e.target.closest('#font-upload-input') && !e.target.closest('#applyFontBtn') && !e.target.closest('#resetFontBtn') && !e.target.closest('#music-upload-input') && !e.target.closest('#playMusicBtn') && !e.target.closest('#pauseMusicBtn') && !e.target.closest('#showSolverModalToggleBtn') && !e.target.closest('input[name="shuffleAnim"]')) {
+            // Exclude Theme Toggle as it has its own vibration logic
+            if (e.target.closest('.btn, .tab-button, .mode-card') && !e.target.closest('#vibrationToggleBtn') && !e.target.closest('#solverModeToggleBtn') && !e.target.closest('#changeSolverSpeedBtn') && !e.target.closest('#applySolverSpeedBtn') && !e.target.closest('#closeSolverSpeedModalBtn') && !e.target.closest('#font-upload-input') && !e.target.closest('#applyFontBtn') && !e.target.closest('#resetFontBtn') && !e.target.closest('#music-upload-input') && !e.target.closest('#playMusicBtn') && !e.target.closest('#pauseMusicBtn') && !e.target.closest('#showSolverModalToggleBtn') && e.target.id !== 'themeToggleButton') { 
                 vibrationManager.click();
             }
         });
 
-        // REMOVED LLM: Strategic Hint Button Logic removed
+        // NEW: Theme Toggle button logic
+        function updateThemeButton() {
+            if (currentTheme === 'dark-theme') {
+                themeToggleButton.innerHTML = `<i class="fas fa-moon"></i> Темная тема`;
+                themeToggleButton.classList.remove('inactive-toggle');
+                themeToggleButton.classList.add('active-toggle');
+            } else {
+                themeToggleButton.innerHTML = `<i class="fas fa-sun"></i> Светлая тема`;
+                themeToggleButton.classList.remove('active-toggle');
+                themeToggleButton.classList.add('inactive-toggle'); // Using inactive-toggle for light
+            }
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            currentTheme = (currentTheme === 'light-theme') ? 'dark-theme' : 'light-theme';
+            if (currentTheme === 'dark-theme') {
+                body.classList.add('dark-theme');
+            } else {
+                body.classList.remove('dark-theme');
+            }
+            saveStats(); // Save the new theme preference
+            updateThemeButton(); // Update button visual
+            
+            // Clear all user overrides so that theme defaults apply
+            document.documentElement.style.setProperty('--user-override-tile-color', '');
+            document.documentElement.style.setProperty('--user-override-background-body', '');
+            document.documentElement.style.setProperty('--user-override-border-game-field', '');
+            document.documentElement.style.setProperty('--user-override-tile-text-color', '');
+            document.documentElement.style.setProperty('--user-override-highlight-color', '');
+            document.documentElement.style.setProperty('--user-override-correct-color', '');
+
+            // Re-sync pickers and visual elements to the new theme's defaults
+            updateColorPickersFromCSS();
+            applyVisualUpdates(); // Re-render tiles and other elements
+            renderMusicPlaylist(); // Update music playlist text color
+        });
 
         function init() {
             // Initialize the dedicated style element for custom font
@@ -3462,29 +3506,17 @@
 
             vibrationManager.load();
             initSliders();
-            loadStats();
+            loadStats(); // Load theme preference and apply it first
             updateSolverModeButton(); // Set initial state of the solver mode button
             updateSolverSpeedDisplay(); // Set initial state of the solver speed display
             updateShowSolverModalButton(); // NEW: Set initial state of the show solver modal button
-            
-            // Set initial state of shuffle animation radio buttons
-            shuffleAnimFastRadio.checked = (shuffleAnimationType === 'fast');
-            shuffleAnimComplexRadio.checked = (shuffleAnimationType === 'complex');
-            document.querySelectorAll('input[name="shuffleAnim"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    shuffleAnimationType = e.target.value;
-                    saveStats();
-                    vibrationManager.click();
-                });
-            });
-
             renderModes();
             createGame(4); 
             currentBoardState = tiles.map(t => {
                 if (t.classList.contains('empty-tile')) return 0;
                 return gameMode === 'image' ? parseInt(t.id.replace('tile-', '')) : parseInt(t.querySelector('.tile-inner')?.textContent);
             });
-            shuffleTiles(true); // Initial shuffle with 'initial' animation
+            shuffleTiles(true); 
             checkAchievements(); 
             document.querySelector('.tab-content.active').querySelectorAll('.settings-card').forEach((card, index) => {
                 card.style.animation = `fadeInUp 0.5s ease-out ${index * 0.07}s forwards`;
@@ -3549,7 +3581,6 @@
                 startTimer();
             }
         });
-
     </script>
 </body>
-</html>
+    </html>
