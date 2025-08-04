@@ -1543,7 +1543,9 @@
         let customFontLoaded = false; // NEW
         let customFontUrl = ''; // NEW: Store the URL of the loaded font
         let customFontApplyScope = 'none'; // 'none', 'tiles', 'all' // NEW
-        let musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }]; // NEW
+        // START MODIFICATION: Add music1.mp3 to default playlist
+        let musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }, { name: 'Default Music 2', url: 'music1.mp3' }]; // NEW
+        // END MODIFICATION
         let currentMusicIndex = 0; // NEW
         let showSolverModal = true; // NEW
         let currentSolverPath = null; // NEW: Stores the full path for solver/hint
@@ -2865,7 +2867,10 @@
 
         // Main function for solving the puzzle step-by-step or instantly
         async function solveEntirePuzzle(initialBoard, size, isHintCalculation = false) {
-            if (isCalculatingPath) return; // Prevent re-entry
+            if (isCalculatingPath) {
+                updateSolverMessage('Просчитывается...');
+                return; // Prevent re-entry
+            }
             isCalculatingPath = true;
             isSolvingPuzzle = true; // Block manual moves during calculation/animation
             solveBtn.disabled = true;
@@ -3390,8 +3395,14 @@
         }
 
         function deleteSong(index) {
-            if (musicPlaylistData.length === 1 && musicPlaylistData[0].name === 'Default Music') {
-                showMessageModal('Ошибка', 'Нельзя удалить единственную стандартную песню.');
+            // Check if all default music tracks are being deleted
+            const defaultMusicCount = musicPlaylistData.filter(song => 
+                (song.name === 'Default Music' && song.url === 'music.mp3') || 
+                (song.name === 'Default Music 2' && song.url === 'music1.mp3')
+            ).length;
+
+            if (musicPlaylistData.length === defaultMusicCount && defaultMusicCount > 0) {
+                showMessageModal('Ошибка', 'Нельзя удалить все стандартные песни. Загрузите свою песню, чтобы заменить их.');
                 return;
             }
             
@@ -3423,14 +3434,20 @@
                         name: file.name,
                         url: event.target.result
                     };
-                    // Check if default music is the only one, if so, replace it
-                    if (musicPlaylistData.length === 1 && musicPlaylistData[0].name === 'Default Music' && musicPlaylistData[0].url === 'music.mp3') {
-                        musicPlaylistData = [newSong];
+                    // Check if *only* default music exists, and if so, replace it with the new song
+                    const isOnlyDefaultMusicPresent = musicPlaylistData.every(song => 
+                        (song.name === 'Default Music' && song.url === 'music.mp3') || 
+                        (song.name === 'Default Music 2' && song.url === 'music1.mp3')
+                    );
+                    
+                    if (isOnlyDefaultMusicPresent) {
+                        musicPlaylistData = [newSong]; // Replace all defaults with the new song
                         currentMusicIndex = 0;
                     } else {
                         musicPlaylistData.push(newSong);
                         currentMusicIndex = musicPlaylistData.length - 1; // Select the newly added song
                     }
+                    
                     playSong(currentMusicIndex);
                     renderMusicPlaylist();
                     saveStats();
@@ -3544,14 +3561,37 @@
 
             // Init music player
             backgroundMusic.volume = musicVolumeSlider.value / 100; // Apply loaded volume
+            
+            // START MODIFICATION: Updated logic for default music initialization
+            // Define the set of default music tracks
+            const defaultTracks = [
+                { name: 'Default Music', url: 'music.mp3' },
+                { name: 'Default Music 2', url: 'music1.mp3' }
+            ];
+
+            // Check if the current playlist (potentially loaded from localStorage)
+            // contains only a subset of the default tracks, or is empty.
+            const hasOnlySomeDefaults = musicPlaylistData.every(song => 
+                defaultTracks.some(defaultSong => defaultSong.name === song.name && defaultSong.url === song.url)
+            ) && musicPlaylistData.length < defaultTracks.length;
+            
+            const isEmptyPlaylist = musicPlaylistData.length === 0;
+
+            if (isEmptyPlaylist || hasOnlySomeDefaults) {
+                // If playlist is empty or only contains a subset of defaults,
+                // replace it with the full set of default tracks.
+                musicPlaylistData = [...defaultTracks];
+                currentMusicIndex = 0; // Reset index to the first default track
+            }
+
             if (musicPlaylistData.length > 0) {
                 backgroundMusic.src = musicPlaylistData[currentMusicIndex].url;
             } else {
-                // Ensure default music is always present if playlist is empty
-                musicPlaylistData = [{ name: 'Default Music', url: 'music.mp3' }];
-                backgroundMusic.src = musicPlaylistData[0].url;
-                currentMusicIndex = 0;
+                // Fallback in case something unexpected happens and playlist is still empty
+                backgroundMusic.src = '';
             }
+            // END MODIFICATION
+            
             renderMusicPlaylist();
 
             // NEW: Ensure solver related displays are hidden on load
