@@ -2266,6 +2266,7 @@
             checkAchievements();
             renderStatistics();
             createConfetti();
+            shuffleTiles();
             setTimeout(() => {
                 showMessageModal('🎉 Победа!', `Поздравляю! Вы собрали все плитки правильно!\nВаш счет: ${currentScore}\nХодов сделано: ${gameStats.currentMoves}`);
             }, 1000);
